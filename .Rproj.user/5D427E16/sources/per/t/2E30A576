@@ -1,0 +1,31 @@
+{
+    "id": "2E30A576",
+    "path": "~/Project/school_work/Bank_defaulting/logistics_regression.Rmd",
+    "project_path": "Bank_defaulting/logistics_regression.Rmd",
+    "type": "r_markdown",
+    "hash": "72755503",
+    "contents": "",
+    "dirty": false,
+    "created": 1723720732722.0,
+    "source_on_save": false,
+    "relative_order": 8,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "210,0",
+        "scrollLine": "0",
+        "rmdVisualMode": "true",
+        "rmdVisualWrapConfigured": "true",
+        "docOutlineVisible": "1",
+        "rmdVisualCollapsedChunks": "",
+        "rmdVisualModeLocation": "2:0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1723352688,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1723352688,
+    "read_only": false,
+    "read_only_alternatives": []
+}

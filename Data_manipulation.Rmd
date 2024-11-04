@@ -1,0 +1,1038 @@
+---
+title:  CHAPTER_3   
+        Data_Manipulation   
+output: html_document   
+date: "`r Sys.Date()`"
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+Data manipulation is the process of sorting,filtering
+aggregating,transforming and summarizing data sets to meet certain user
+satisfaction
+
+We'll have to install and load some important packages used in data
+manipulation and they are included in the chunk code below:
+
+```{r,eval=FALSE}
+install.packages('magrittr')
+```
+
+```{r,warning=FALSE}
+library('magrittr')
+```
+
+```{r,eval=FALSE}
+install.packages('ggplot2')
+```
+
+```{r,warning=FALSE}
+library('ggplot2')
+```
+
+More will be interacted with later
+
+R has some inbuilt data sets that can be used in studying data
+manipulation.\
+These data sets come in their data set packages.
+
+# Loading data in R
+
+The **data()** function is used to load data sets in R
+
+-   Example 1:
+
+```{r,warning=F}
+data(cars)
+head(cars) 
+str(cars)
+cars%>%qplot(speed,dist,data=.)
+```
+
+-   We load the data sets cars in R
+-   `head()` is used to output 1^st^ 6 rows
+-   `str()` shows the structure of the data set cars
+-   `qplot()` is used in plotting
+
+The *`mlbench`* data set package contains data sets for machine learning
+and we'll be using it
+
+```{r,eval=F,warning=FALSE}
+install.packages('mlbench')
+```
+
+```{r,warning=FALSE}
+library('mlbench')
+```
+
+## Data reviewing in R
+
+```{r,echo=F,warning=FALSE}
+library('knitr')
+```
+
+```{r}
+cars%>%head(3)
+cars%>%tail(3)
+cars%>%summary%>%kable(.)
+```
+
+-   `head()` displays 1^st^ n rows, in our case 1^st^ 3 rows.
+-   `tail()` displays last n rows, in our case 3 last rows.
+-   summary() gives the summary of given data set
+    -   summary given is for each variable(col) with observations
+-   `kable()` is a function from *`knitr`* package that draws tables
+
+Consider the data set iris
+
+```{r}
+data('iris')
+iris%>%summary()
+iris%>%summary%>%kable
+```
+
+*NB:*
+
+-   The summary you get depends on the type of columns you have.
+-   Numerical data is summarized by their `quantiles` whilst `boolean`
+    is summarized by counts of each category or True/False values
+
+# Reading data in R
+
+We have various functions for reading(importing) data to R.\
+The code "`?read.table()`" has a list of such functions.\
+The functions include:
+
+1.  **read.table()** :
+    -   Data are separated by a white space
+    -   for reading files with tabular data(data stored in tables)
+2.  **read.csv()** :
+    -   CSV stands for comma separated values
+    -   Data are separated by commas
+    -   for reading files with tabular data
+3.  **read.xlsx()** :
+    -   for reading data stored in excel
+4.  **read.delim()** :
+    -   for reading files with TSV data (Tab separated values data)
+
+    -   Delimited data is that which is separated by a specific
+        delimiter.
+
+    -   Eg: a csv data whose specific delimiter is a comma.
+
+    -   The function is effective for reading TSV data **NB:** Data
+        loaded in R using the above functions is stored as a data frame.
+
+Some of the arguments used:(more arguments can be found in "
+`?read.table()` "):
+
+1.  **`header`** :
+
+-   Function is defined as True or False
+-   If file has columns, then argument is defined as True and vice-versa
+-   **NB:**
+    -   If set as True, R uses the 1^st^ row to set column names
+    -   Otherwise the 1^st^ line is used as the 1^st^ row of the
+        `dataframe`
+
+2.  **`col.names`**:
+
+-   If `header=F`, argument is used to name columns of data frame
+-   A vector of string with a string for each column is defined
+
+3.  **`dec`**:
+
+-   argument specifies whether a "," or "." should be used for decimal
+    numbers
+
+4.  **`comment.Char`**:
+
+-   By default "\#" is used for comments
+-   If "\#" is used in data the argument is used to change it to avoid R
+    assuming that data are comments
+-   same applies if another symbol is used for comments in the data
+
+5.  **`stringAsFactors`**:
+
+-   By default, columns with strings are interpreted as factors
+-   The argument is set to False when column strings are not factors
+
+6.  **`colClasses`**:
+
+-   Allows one to specify the type each col should have, ie;
+    -   string or factor
+-   specification can only be done for all cols and not 1
+
+## Examples of Reading and Formatting Data sets
+
+1.  **`Breast Cancer Dataset`**
+
+-   Data is obtained from *`mlbench`* package
+
+```{r,echo=F}
+  library("magrittr")
+  library('mlbench')
+```
+
+```{r}
+    data(BreastCancer)
+  BreastCancer%>%head(3)
+```
+
+-   The code above gives us a glimpse if this data set
+
+-   We want to read the data from it's original website and store it in
+    a variable, `data_url`
+
+-   [Here's the link to the
+    data](https://archive.ics.uci.edu/dataset/15/breast+cancer+wisconsin+original)
+
+-   There are 2 ways in reading this data into R:
+
+    A.Loading data indirectly from website by storing it in a local
+    file.
+
+    -   The con here is that when sharing other people can't access the
+        file as it's in the directory of the machine that originally
+        wrote the code.
+    -   One can also make mistakes in the steps of downloading the file.
+
+    B. Loading the data directly using the website
+
+    -   The con here is that the website can be brought down and thus
+        data is lost
+    -   The administrators of the server can also modify data corrupting
+        the original version we needed
+
+**A. Loading data indirectly from website by storing it in a local
+file**
+
+-   The steps here include:
+
+1.  Storing data set's website URL (link) to a variable `data_url`
+
+```{r,eval=T}
+  data_url<-"https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.data"
+```
+
+2.  Use the `readLines()` to check delimiter used to separate values
+
+```{r,eval=F}
+  line_s<-readLines(data_url)
+  line_s[1:5]
+```
+
+```         
+- The `readLines()` function corerce our data into a vector of lines
+    - We use it to check the separator of our data.
+    - Our data is CSV thus `read.csv()` is used.
+    - We store the vector in a variable called line_s
+- We then access the 1^st^ 5 rows which are stored in line_s inorder to see our delimiter
+```
+
+3.  Use `writeLines()` to store a list of strings to a file.
+
+```{r,eval=F}
+writeLines(line_s,con="C:/Users/ganje/OneDrive/Documents/project/R_work/data/raw-breast-cancer.csv")
+```
+
+-   The `writeLines()` is used to write a list of strings to a file
+-   Our list of strings is stored in the vector string `lines_s`
+-   The argument `con` let's you specify the path where our file is
+    stored
+
+4.  Use `read.csv()` to read our data from the file it's stored in
+
+```{r}
+raw_breast_cancer<-read.csv("data/raw-breast-cancer.csv",col.names=names(BreastCancer))
+raw_breast_cancer %>% head(3)
+```
+
+```         
+- Compare `BreastCancer` and our imported data `raw-breast-cancer`
+- Are they equal?
+```
+
+**B. Loading the data directly using the website**\
+Steps:
+
+1.  Use our variable `data_url` that has our stored link
+2.  Use `read.csv()` to read data from our link
+
+```{r,eval=F}
+raw_breast_cancer<-read.csv(data_url,header=F,col.names = names(BreastCancer))
+raw_breast_cancer %>% head(3)
+BreastCancer %>% head(3)
+```
+
+-   Our imported data set `raw_breast_cancer` and the data set from
+    *`mlbench`* `BreastCancer` are all similar apart from the column
+    `class`
+-   `raw_breast_cancer` has observations for `class` as 2 and 4 (2 for
+    `bening`, 4 for `malignant`)
+-   Our goal is to make the data sets same thus some modifications are
+    done to the imported data set and they include:
+
+1.  Translating numbers(2 and 4) into factors.
+    -   We'll translate the numbers to strings then to factors
+    -   We don't want to lose original data of imported data set thus we
+        create a new variable.
+
+```{r}
+    formatted_breast_cancer<-raw_breast_cancer
+```
+
+```         
+- Using `ifelse()` we map(transform) numbers to string
+- we'll create a function to reduce variables we have
+```
+
+```{r}
+    map_class<-function(x){
+      ifelse(x==2,"bening","maligant")
+    }
+    mapped<-formatted_breast_cancer$Class %>% map_class
+    mapped %>% table
+```
+
+-   `table()` is used to show the number of times a value in a vector
+    appears
+
+```{r}
+    formatted_breast_cancer $Class %>% unique
+```
+
+-   `unique()` removes duplicates in vectors. Shows the unique elements
+    in a vector
+
+-   *NB:* We don't want to assume that the only values are 2 and 4 (ie,
+    there are no unexpected values). Thus we'll have to set the
+    unexpected values as NA
+
+-   To do this:
+
+    1.  Create a table `dict` to map through values.
+
+-   Nested `ifelse` can be used but in our case we have many different
+    possible values thus cumbersome to use them
+
+-   We've named our table `dict` to avoid confusion with `table()`
+
+-   The table dictionary `dict` will be used to look up words
+
+-   `dict` should be a vector we can use strings(names) as indices
+
+    2.  When we use a vector as a table, we need to have it's keys(for
+        the table) as strings
+    3.  Thus the numbers from the vector we want to map from should be
+        converted to strings before looking them up in the dictionary.
+        Below code implements this
+
+    ```{r}
+        dict<-c("2"="benign","4"="malignant")
+        map_class<-function(x) dict[as.character(x)]
+        
+        mapped<-formatted_breast_cancer$Class %>% map_class
+        mapped %>% table
+    ```
+
+    If we look at our vector `mapped`, we see that its a named vector
+    and this is not our desired result
+
+    ```{r}
+        mapped[1:5]
+    ```
+
+-   We'll use the `unname()` function to offset this
+
+```{r}
+    mapped %<>% unname
+    mapped[1:5]
+```
+
+-   The assignment pipe `%<>%` takes output from LHS to the RHS for
+    execution. It then takes the output from RHS to LHS
+
+-   The tee pipe `%t>%` takes output from LHS to RHS but does not store
+    it
+
+-   The pipe operator `%>%` takes output from LHS to RHS and stores it
+
+-   The exposition pipe \` %\$%
+
+    4.  The final step is to make the values of class factors
+
+```{r}
+    formatted_breast_cancer$Class %>% 
+      map_class %>% 
+      unname %>% 
+      factor(levels=c("benign","malignant")) %>% 
+      levels
+```
+
+**The entire reading of data and formatting is shown below:**
+
+```{r,echo=F}
+library("magrittr")
+library("mlbench")
+data("BreastCancer")
+```
+
+```{r,eval=FALSE}
+# get data from website using tinyurl
+data_url<-"https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.data"
+#load data into rR
+raw_breast_cancer<-read.csv(data_url,header = F,
+                            col.names = names(BreastCancer))
+# This is done to keep a copy of original data
+formatted_breast_cancer<-raw_breast_cancer
+#create a vector dict used to change values to character
+dict<-c("2"="benign","4"="malignant")
+#functions coerces values of dict into characters
+map_class<-function(x)dict[as.character(x)]
+formatted_breast_cancer$Class<-formatted_breast_cancer$Class %>% 
+  map_class %>% 
+  unname %>% 
+  factor(levels = c("benign","malignant"))
+str(formatted_breast_cancer)
+```
+
+$formatted\_breast\_cancer\$Class<-formatted\_breast\_cancer\$Class$ is used to overwrite current values with the new values defined on the RHS of the $<-$ operator
+The code below perfomes the same task as the one above but is more user friendly
+```{r}
+#delete the formatted_breast_cancer and dict  variables to avoid confusing R
+rm(formatted_breast_cancer)
+rm(dict)
+# Copy original data to another variable
+formatted_breast_cancer<-raw_breast_cancer
+# create an empty vector of characters of the same size as the Class variable
+dict<-vector(mode="character",length = length(formatted_breast_cancer$Class))
+# changing numerics to characters
+dict[formatted_breast_cancer$Class==2]<-"bening"
+dict[formatted_breast_cancer$Class==4]<-"malignant"
+#editing existing Class variable to accommodate new data that is a factor
+dict
+formatted_breast_cancer$Class<-factor(dict,levels=c("benign","malignant"))
+str(formatted_breast_cancer)
+
+```
+
+
+```{r}
+raw_breast_cancer$Class %>% 
+  {dict<-c("2"="benign","4"="malignant")
+  dict[as.character(.)]
+  } %>% 
+  unname %>% 
+  factor(levels= c("benign","malignant")) %>% 
+  table
+```
+
+-   The code chunk above defines all we've done
+-   Try fixing the latter code to get similar results.
+-   The next save is to save our imported data to avoid parsing (ie,
+    avoiding repeating the whole process
+-   `save()` function is used to save our new file
+-   we'll save the file in the same directory we created before
+
+```{r}
+formatted_breast_cancer %>% 
+save(file="C:/Users/ganje/OneDrive/Documents/project/R_work/data/formatted-breas-cancer.rda")
+```
+
+*NB:* use `/` for your directory's pathway as R interprets `\` as escape
+character
+
+The suffix `.rda` states file is an R document
+
+The `load` function is then used to load the data set we've saved into
+R's `Gloabal enviroment`
+
+-   Thus there's no need to assign it a new variable as it will be
+    loaded with its saved variable
+
+```{r}
+load("C:/Users/ganje/OneDrive/Documents/project/R_work/data/formatted-breas-cancer.rda")
+formatted_breast_cancer %>% head(3)
+```
+
+2.  **Boston Housing Data set**
+
+-   It's a data set from *`mlbench`* package and has information about
+    crime rates and some explanatory variables that can be used to
+    predict crime rates.
+
+```{r}
+  library('mlbench')
+  data(BostonHousing)
+  str(BostonHousing)
+```
+
+-   As before we'll load the data directly from its URL(website)
+-   [*Click here*](http://tinyurl.com/zq2u8vx) to open the *`tinyurl`*
+    of the website to the actual data
+    -   **To get the actual link:**
+        1.  Open your web browser.
+        2.  Copy and paste the `TinyURL` <http://tinyurl.com/zq2u8vx>
+            into the address bar.
+        3.  On the `TinyURL` website, you'll automatically be redirected
+            to the original URL
+        4.  The actual link associated with the
+            `TinyURL`"<https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.data>"
+            will be displayed in your browser's address bar.
+-   We'll save the original URL in a variable, `data_url`
+
+```{r,eval=F}
+    data_url<-"https://archive.ics.uci.edu/ml/machine-learning-databases/housing/housing.data"
+    boston_housing<-read.table(data_url)
+    str(boston_housing)
+```
+
+-   Boston data set is separated by white spaces thus use of
+    read.table()function
+-   If we compare the `str(BostonHousing)`(Data set *from`mlbench`*) and
+    `str(boston_housing) (imported data set)`, we see that their
+    observations are same.
+-   Our imported data has different types in each column unlike the
+    `BostonHousing` which has all its columns as "numeric" except the
+    *`Chas`* variable which is a "factor
+-   This can be fixed using the `colClasses` argument.
+-   To do this will make a vector of strings for the classes,\
+    Vector should be numeric for all columns other than the `chas`
+    variable
+
+```{r}
+col_classes<-rep("numeric",length(BostonHousing))
+col_classes[which("chas" == names(BostonHousing))]<-"factor"
+col_classes
+```
+
+```         
+ - The code above creates a vector of strings.
+
+   - `rep()` function replicates the string "numeric" 14 times ie(the length of the `BostonHousing` dataset).
+    - The strings(characters) are stored in a vector of strings, `col_classes`
+    _ The `which()` is a boolean function(ie; Displays indices that satisfy the condition as `TRUE`) ie;
+```
+
+```{r}
+          which("chas" == names(BostonHousing))
+```
+
+```         
+    - It's used in our code to access the column in the `BostonHousing` that's named `chas`
+    - Once accessed the string "factor" is saved as the new data type of that column.
+    - The code can also be evaluated as
+```
+
+```{r}
+        col_classes<-rep("numeric",length(BostonHousing))
+        col_classes[4]<-"factor"
+        col_classes
+```
+
+```         
+- Next is to name the columns of our imported dataset
+  * The `col.names()` is used to do so
+  * We'll equate it to `names(BostonHousing)` to get its column names as the names of our imported data set rather than writing each of them.
+- Also, we'll specify the data types of our columns using the `colClasses`, which will be equated to our vector of strings `col_classes` that defines these datatypes,
+  
+```
+
+```{r,eval=F}
+      boston_housing<-read.table(data_url,
+      col.names=names(BostonHousing),
+      colClasses=col_classes)
+      str(boston_housing)
+```
+
+-   The imported data can also be manipulated as follows:
+
+```{r}
+raw_data<-read.table(data_url,col.names = names(BostonHousing))
+boston_housing<-raw_data %>% 
+  mutate(across(!chas,as.numeric)) %>% 
+  mutate(chas=factor(chas,level=0:1))
+str(boston_housing)
+```
+
+# Manipulating Data with `dplyr`
+
+[***Click here***](https://dplyr.tidyverse.org/articles/dplyr.html) **to
+open documentation of dplyr**\
+We'll start by installing and loading `dplyr` in R
+
+```{r,eval=F}
+install.packages('dplyr')
+```
+
+```{r, warning=F}
+library('dplyr')
+```
+
+## Some useful functions of `dplyr`
+
+1.  **`tbl_df()`**
+
+    -   its used to convert a `dataframe` into a `tibble`
+    -   A tibble is a modern modified `dataframe` that has more features
+        than the `dataframe`
+
+    ```{r,warning=F, comment=NA}
+      iris%>%tbl_df
+      iris %>% head(10)
+    ```
+
+-   It only prints the 1^st^ 10 rows and not all columns are printed
+-   Compare `iris` data set as a `tibble` and as a `dataframe` in the
+    out put of our code
+
+2.  **`select()`**\
+
+-   Picks selected columns and gets rid of the rest. A. **Picking 1
+    column**
+
+    -   Its equivalent to selecting columns in `dataframes` using
+        indexing
+
+    ```{r,warning=F,comments=NA}
+      iris %>% tbl_df %>% select(Petal.Width) %>% head(3)
+    ```
+
+-   In the above code:
+
+    -   Our data set `iris` is transformed to a `tibble`
+
+    -   We select the `Petal.width` column using `select()`
+
+        -   *We'll repeat the same code using indices*
+
+    -   Using the `head()` we select the 1^st^ 3 rows
+
+    -   code can also be written as:
+
+        -   *A. Using indices*
+
+        ```{r,warning=F,comment=NA}
+            iris %>%tbl_df %>%.[,4]%>% head(3)
+        ```
+
+        -   *B. Using column name*
+
+        ```{r,warning=F,comment=NA}
+            iris %>% tbl_df %>% .$Petal.Width %>% head(3)
+        ```
+
+    B. **Picking several columns**
+
+    ```{r,warning=F,comment=NA}
+        iris %>% tbl_df %>% 
+          select(Sepal.Width,Petal.Length) %>% head(3)
+    ```
+
+    C. **Picking a range of columns**
+
+    ```{r,warning=F,comment=NA}
+        iris %>% tbl_df %>% 
+          select(Sepal.Length:Petal.Length) %>% head(3)
+    ```
+
+    -   **`select()`'s effective use is in pattern matching when
+        selecting columns**
+
+    -   This enables picking columns based on column names.
+
+    -   To do this, we have some specified arguments based on what you
+        want -Below are examples with their specified arguments
+
+        -   Example_1 ("starts_with"):
+
+        ```{r,warning=F,comment=NA}
+              iris %>% tbl_df %>%
+              select(starts_with("Petal")) %>% head(3)
+        ```
+
+        ```         
+          Columns whose names starts with "Petal" are printed
+        ```
+
+        -   Example_2 ("ends_with")
+
+        ```{r,warning=F,comment=NA}
+              iris %>% tbl_df %>% 
+              select(ends_with("Width")) %>% head(3)
+        ```
+
+        ```         
+           Columns whose names end with "Width" are printed
+        ```
+
+        -   Example_3 ("contains")
+
+        ```{r,warning=F,comment=NA}
+              iris %>% tbl_df %>% 
+              select(contains("etal")) %>% head(3)
+        ```
+
+        ```         
+           Columns whose names contain "etal" are printed
+        ```
+
+        -   Example_4 ("matches")
+
+        ```{r,warning=F,comment=NA}
+              iris %>% tbl_df %>% 
+              select(matches("t")) %>% head(3)
+        ```
+
+        ```         
+           Columns whose names cantain the string "t" are printed
+           **NB:** Columns whose names start or end with "t" are not printed
+        ```
+
+        -   `select()` can be used to remove columns
+
+        ```{r,warning=F,comment=NA}
+              iris %>% tbl_df %>% 
+              select(-starts_with("Petal")) %>% head(3)
+        ```
+
+3.  **`mutate()`**
+
+-   Adds computed values to your `dataframe`
+-   Allows adding of a column to a `dataframe` by specifying the
+    expression to compute it(ie; expression to compute column to be
+    added)
+
+```{r,warning=F,comment=NA}
+  iris %>% tbl_df %>% 
+  mutate(P_W_plus_P_L=Petal.Width+Petal.Length) %>% 
+  select(Species,P_W_plus_P_L) %>% head(3)
+```
+
+-   `P_W (Petal.width), P_L (Petal.Length)`
+-   More columns can be added by specifying them in `mutate()`
+
+```{r,warning=FALSE,comment=NA}
+iris %>% tbl_df %>% 
+  mutate(P_W_plus_P_L=Petal.Width+Petal.Length,
+         S_W_plus_S_L=Sepal.Width+Sepal.Length) %>% 
+  select(P_W_plus_P_L,S_W_plus_S_L) %>% head(3)
+```
+
+-   `S_W (Sepal.Width), S_L (Sepal.Length)`
+-   `mutate()` can be called multiple times in the pipeline
+
+4.  **`transmute()`**
+
+-   Modification of the `select()` and `mutate()`
+-   Just like `mutate()` it adds computed values of a column to a data
+    frame and just like `select()` it picks columns whose values are
+    computed and get rids of the rest.
+
+```{r,warning=F,comment=NA}
+  iris %>% tbl_df %>% 
+  transmute(P_W_plus_P_L=Petal.Width+Petal.Length) %>% head(3)
+```
+
+5.  **`arrange()`**
+
+-   Rearranges `dataframes` by sorting given columns to specifications
+    given
+-   By default it sorts a given column in ascending order
+
+```{r,warning=F,comment=NA}
+  iris %>% tbl_df %>% 
+  arrange(Sepal.Length) %>% head(6)
+```
+
+-   By using the argument `desc` it sorts given columns in descending
+    order
+
+```{r,warning=F,comment=NA}
+iris %>% tbl_df %>% 
+  arrange(desc(Sepal.Length)) %>% head(6)
+```
+
+6.  **`filter()`**
+
+-   Picks out rows based on logical expressions
+
+```{r,warning=F,comment=NA}
+iris %>% tbl_df %>% 
+  filter(Sepal.Length > 5) %>% head(3)
+```
+
+-   You can have at least 1 logical expressions
+
+```{r,warning=F,comment=NA}
+iris %>% tbl_df %>% 
+  filter(Sepal.Length >5,Species=="virginica") %>% 
+  select(Species,Sepal.Length) %>% head(3)
+```
+
+7.  **`group_by()`**
+
+-   It splits data into sub tables based on column values
+-   Tells R you want to work with data in different subsets\`
+-   You can group data by 1 or more variables
+-   Works together with `summarize()` or `summarise()`
+-   Is effective when grouping factors or discrete numbers11
+
+```{r,warning=FALSE,comment=NA}
+  iris %>% tbl_df %>% group_by(Species)
+```
+
+-   There's no much difference here when using `group_by()` as the
+    output is similar to original data set
+
+8.  **`summarise/summarize()`**
+
+-   Calculates summary of descriptive statistics
+
+-   Let's you compute different descriptive statistics by expressing
+    what you want to summarize
+
+-   Like's of descriptive statistics include:
+
+    a.  `mean` - Central tendancy
+    b.  `variance` - Deviation from mean (Mean Square Error)
+    c.  `sd` - Square root of mean Square Error
+    d.  `covariance`
+    e.  `cor-relation`
+    f.  `mode`
+    g.  `median`
+    h.  `skewness`
+    i.  `kurtosis`
+    j.  `range`
+    k.  `Interquartile Range (IQR)`
+    l.  `sample and population size`
+
+    ```{r}
+      iris %>% 
+        summarise(mean(Petal.Length),
+      mean(Sepal.Length))
+    iris %>% summarize(sd(Petal.Length),
+                       sd(Sepal.Length))
+    iris %>% 
+    summarise(mean(Petal.Length),
+      mean(Sepal.Length),sd(Petal.Length),
+                       sd(Sepal.Length))
+    ```
+
+    ```{r}
+    iris %>% 
+      summarise(observations=n())
+    ```
+
+9.  **`group_by()` and `summarise()`**
+
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+  summarise(mean_P_L=mean(Petal.Length),
+            mean_S_L=mean(Sepal.Length))
+```
+
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+  summarise(Number_of_species=n())
+```
+
+-   `summarise()` function can take at least 1 argument which are
+    descriptive statistics
+
+```{r}
+  iris %>% 
+  group_by(Species) %>% 
+  summarise(Number_of_obser=n(),
+            mean_PetalLength=mean(Petal.Length),
+            var_PetalLength=var(Petal.Length),
+            sd_PetalLength=sd(Petal.Length))
+```
+
+# Breast Cancer Data Manipulation with `dplyr`
+
+1.  Using `mutate()` to express `class` as a factor
+
+```{r}
+formatted_breast_cancer<-raw_breast_cancer %>% mutate(Class=Class %>% {
+  c("2"="benign","4"="malignant")[as.character(.)]
+} %>% 
+  unname %>% 
+  factor(levels= c("benign","malignant"))
+)
+formatted_breast_cancer %>% head(3)
+str(formatted_breast_cancer)
+```
+
+```{r}
+formatted_breast_cancer<-raw_breast_cancer %>% mutate(Class=Class %>% {
+  c("2"="benign","4"="malignant")[as.character(.)]
+} %>% 
+  unname %>% 
+  factor(levels= c("benign","malignant"))
+) %>% 
+  mutate(Id=as.character(Id)) %>% 
+  mutate(across(Cl.thickness:Epith.c.size,as.ordered)) %>% 
+  mutate(across(Bare.nuclei:Mitoses,as.factor)) %>% 
+  mutate(Bare.nuclei=factor(Bare.nuclei,levels=1:10))
+  str(formatted_breast_cancer)
+
+
+```
+
+-   **NB:** In the chunk above `mutate()` doesn't add a new column
+    `Class` but writes over the existing column `Class` as they share
+    the same variable name
+
+-   If keen, we've not used the dictionary table `dict` as we can't have
+    it inside the mutate function
+
+-   if it was to be used, we have to define it 1^st^ as a function
+    outside `mutate()`
+
+```{r}
+format_class<-. %>% {
+  dict<-c("2"="benign","4"="malignant")
+  dict[as.character(.)]
+} %>% unname %>% factor(levels=c("benign","malignant"))
+formatted_breast_cancer<-raw_breast_cancer %>% mutate(Class=format_class(Class))
+```
+
+2.**Using `group_by()`and `summarise()`**
+
+-   We want to check how different variables affect the response
+    variable `Class`
+
+```{r}
+formatted_breast_cancer %>% 
+  group_by(Class) %>% 
+  summarise(mean.thickness=mean(Cl.thickness))
+```
+
+```{r}
+formatted_breast_cancer %>% 
+  group_by(Class) %>% 
+  summarise(mean.size=mean(Cell.size))
+```
+
+3.  **Using `group_by()`, `summarise()`,`arrange()`**
+
+-   We want to check number of occurrence of `benign` and `malignant`
+    tumor as cell size increase
+
+```{r,comment=NA}
+  formatted_breast_cancer %>% 
+  arrange(Cell.size) %>% 
+  group_by(Cell.size,Class) %>% 
+  summarise(class_count=n())
+```
+
+We learn:
+
+-   There are more `benign` tumors compared to `malignant` when cell
+    size is small.
+-   There are more `malignat` tumors than `benign` when cell size is
+    large
+-   Occurrence of `benign` is inversely related to increase in cell size
+-   Occurrence of `malignant` is directly related ti increase in cell
+    size
+
+Let's see how cell thickness behaves as a function of both class and
+cell size
+
+```{r}
+formatted_breast_cancer %>% 
+  group_by(Class,as.factor(Cell.size)) %>% 
+  summarize(mean.thickness=mean(Cl.thickness))
+```
+
+We learn that:
+
+-   `mean.thickness` increases as cell size increases for `benign`
+    whilst there's no pattern for the `malignant` tumor
+
+Let"s look at the number of `benign` and `malignant` tumors for each
+cell size and see what the thickness is
+
+```{r}
+formatted_breast_cancer %>% 
+  group_by(as.factor(Cell.size),Class) %>% 
+  summarize(mean.thickness=mean(Cl.thickness))
+```
+
+## Tidying data with `tidyr`
+
+[\*CLICK HERE] (\*<https://tidyr.tidyverse.org/articles/tidy-data.html>)
+to access package's documentation
+
+our 1^st^ step is to install and load the package
+
+```{r,eval=F}
+install.packages("tidyr")
+```
+
+```{r,warning=F,comment=NA}
+library("tidyr")
+```
+
+Tidying data helps in plotting and summarizing data efficiently
+
+Tidying data will help one work with columns of a data frame you want to
+work with
+
+For instance in the `iris` data set we can check how `Petal.Width`
+varies with different `Species`
+
+-   We can use the `dplyr` function `select()` to check it out
+
+```{r}
+iris %>% select(Species,Petal.Length) %>% head(3)
+
+
+```
+
+We've said that tidying data enables us specify columns we want to work
+with
+
+This makes it efficient for us to summarize and plot data
+
+Let's say we want a `boxplot`of `Petal.Length` against `Specie` of the
+`iris` data set
+
+Steps:
+
+-   Specify the columns we want to work with
+
+-   Use `qplot()` of `ggplot` package for plotting
+
+```{r}
+iris %>% select(Species,Petal.Length) %>% 
+  qplot(Species,Petal.Length,data=.,geom="boxplot")
+
+```
+
+```{r}
+iris %>% 
+  ggplot(aes(x=Species,y=Petal.Length)) +
+  geom_boxplot()
+```
+
+Our plotting code works since we have columns for the x and y axis
+
+In the event we want a plot for at least 2 columns we employ the `tidyr`
+package as its difficult to map various different columns in the x and y
+axis
+
+We employ the `gather()`
+
+The `gather()` is used to collect columns of a data set
+
+It has 3 arguments:
+
+-   first argument is a column that stores as factors
+
+-   second argument stores values of chosen columns

@@ -1,0 +1,3 @@
+"0","alcohol.2<-alcohol[-c(6,16)]"
+"0","cigarettes.2<-cigarettes[-c(6,16)]"
+"0",""

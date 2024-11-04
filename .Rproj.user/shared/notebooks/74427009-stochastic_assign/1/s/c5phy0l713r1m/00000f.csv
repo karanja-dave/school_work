@@ -1,0 +1,6 @@
+"0","#3-step tpm"
+"0","tpm_markov3<-(tpm_markov)^3"
+"0","cat(""the prob that a driver currently in the North zone will still be there after 3 trips is "",tpm_markov3[1,1])"
+"1","the prob that a driver currently in the North zone will still be there after 3 trips is "
+"1"," "
+"1","0.385"

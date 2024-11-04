@@ -1,0 +1,6 @@
+"0","ggseasonplot(task1$solar,year.labels=T,year.labels.left=T)+"
+"0","  ylab(""solar"")+"
+"0","  ggtitle(""pff"")"
+"2","Error in ggseasonplot(task1$solar, year.labels = T, year.labels.left = T) : 
+  could not find function ""ggseasonplot""
+"

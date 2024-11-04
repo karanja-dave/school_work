@@ -1,0 +1,3 @@
+"0","cars %>% ggplot(aes(x=speed,y=..count..)) +"
+"0","  geom_histogram(bins=10) +"
+"0","  geom_density()"

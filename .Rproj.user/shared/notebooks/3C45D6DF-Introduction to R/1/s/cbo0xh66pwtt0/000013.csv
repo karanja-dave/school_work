@@ -1,0 +1,6 @@
+"0",""
+"0","# Generate the density plot"
+"0","y %>% ggplot(aes(x)) +"
+"0","  geom_density() +"
+"0","  facet_wrap(~mylevels)"
+"0",""

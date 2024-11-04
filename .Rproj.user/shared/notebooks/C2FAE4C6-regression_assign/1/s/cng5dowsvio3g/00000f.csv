@@ -1,0 +1,6 @@
+"0","#Pearson Correlation coefficient"
+"0","p_cor<-cor(alcohol,cigarettes,method=""pearson"")"
+"0","cat(""The pearson's correlation coefficient is:"",round(p_cor,4))"
+"1","The pearson's correlation coefficient is:"
+"1"," "
+"1","0.4853"

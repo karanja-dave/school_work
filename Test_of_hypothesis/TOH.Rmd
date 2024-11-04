@@ -1,0 +1,476 @@
+---
+title: "Test of Hypothesis"
+output: html_document
+date: "2024-07-08"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+options(digits = 5) #set 5 significant figures for my workings
+```
+
+Hypothesis Testing is a technique used to asses the statistically significance difference of models or populations.
+
+## Procedures in TOH
+
+1.  State parameter of interest
+2.  State the hypothesis
+3.  State the level of significance (L.O.S) and determine critical region
+4.  Compute test statistics
+5.  Compare critical region and the test statistics
+6.  Make conclusions based on comparison as to whether you'll reject or accept $H_0$
+
+We'll check at some few scenarios of this
+
+# 1. One sample Test for Mean
+
+## A. Variance is known
+
+### Lower Tail test
+
+The hypothesis to be tested is $H_0:\mu=\mu_0\ vs\ H_1:\mu\le\mu_0$
+
+When variance is known, a z-test is used to test hypothesis where $Z=\frac{\sqrt{n}(\bar{X}-\mu_0)^2}{\sigma}\sim\mathcal{N(0,1)}$
+
+We reject $H_0$ when $Z<Z_{-\alpha}$, $Z_{-\alpha}$ is the tabulated test statistics and $Z$ is the computed one
+
+We also reject $h_0$ when p-value is less than the significance level
+
+##### [**QST 1:**]{.underline}
+
+Suppose the manufacturer claims that the mean lifetime of a light bulb is more than 10,000 hours. For a sample of 30 light bulbs, the mean lifetime turns out to be only 9,900 hours. Assume the population standard deviation to be 120 hours. At .05 significance level, can we reject the claim by the manufacturer?
+
+$H_0:\mu>10,000\ vs\ \mu\le10,000$
+
+$z=\frac{\sqrt{30}(9900-10000)}{120}$
+
+```{r}
+#sample mean
+xbar=9900
+#null hypothesis
+mu0=10000
+#population sd
+sigma=120
+#sample size
+n=30
+#computed test statistics
+z=(sqrt(n)*(xbar-mu0))/(sigma);z
+#tabulated test statistics
+alpha=.05
+(z.alpha=qnorm(alpha,lower.tail=T))
+```
+
+since $Z=-4.564355<z_{-\alpha}=-1.644854$ we reject $H_0$ and thus the mean lifetime of bulbs is not greater than 10,000 hours
+
+```{r}
+#using lower tail p_value to test hypothesis
+(pval=pnorm(z,lower.tail = T))
+```
+
+p-value=0.000002505166 which is less than the significance level .05, the we reject $H_0$
+
+[**QST 1B**]{.underline}:
+
+Under same conditions as the problem above, can we reject the manufacturer's claim on the lifetime of light bulbs at .01 significance level?
+
+```{r}
+#tabulated statistics
+alpha=.01
+(z.alpha<-qnorm(alpha,lower.tail = T))
+```
+
+$-4.564355<-2.326348$ thus we still reject $H_0$
+
+also the p-value is less than $\alpha=.01$, thus we reject $H_0$
+
+##### [**QST 2:**]{.underline}
+
+Suppose the following are the lifetime hours from a random sample of light bulbs. Assuming the population standard deviation to be 120 hours, can we reject a manufacturer's claim that the light bulbs last more than 10,000 hours at .05 significance level?
+
+$H_0:\mu>10000\ vs\ H_1:\mu\le10000$
+
+```{r}
+#load data in R
+x<-scan("TOH_used_datasets/lightbulbs.txt",sep=" ")
+xbar=mean(x)
+mu0=10000
+n=30
+sigma=120
+(z=(sqrt(n)*(xbar-mu0))/(sigma))
+(z.alpha=qnorm(.05,lower.tail = T))
+pval<-pnorm(-4.006)
+cat(z,"<",z.alpha,"\n",pval,"<",.05,"\n","reject null hypothesis")
+```
+
+Alternative solution
+
+```{r,eval=F}
+install.packages("TeachingDemos")
+library("TeachingDemos")
+```
+
+```{r}
+(test=z.test(x,mu=mu0,stdev = sigma,alternative = "less"))
+test$p.value
+```
+
+### Upper Tail Test
+
+The hypothesis tested is
+
+$H_0:\mu=\mu_0\ vs\ \mu>\mu_0$
+
+We reject $H_0$ when $Z>Z_\alpha$
+
+##### [**QST1;**]{.underline}
+
+Suppose the food label on a cookie bag states that there are at most 2 grams of saturated fat in a single cookie. In a sample of 35 cookies, it is found that there are 2.1 grams of saturated fat per cookie on average. Assume the population standard deviation to be 0.25 grams. At .05 significance level, can we reject the claim on food label?
+
+We are testing the hypothesis $H_o:\mu\le2\ vs\ H_1:\mu>2$
+
+$Z=\frac{\sqrt{35}(2.1-2)}{0.25}\sim N(0,1)$
+
+```{r}
+xbar=2.1
+n=35
+mu0=2
+sd=.25
+(z=(sqrt(n)*(xbar-mu0))/sd)
+(z.test=qnorm(.05,lower.tail = F))
+(pnorm(-1.6449,lower.tail = F))
+```
+
+\
+since $2.3664>1.6449$ we reject $H_0$
+
+Since our p-value\> $\alpha$ we still reject $H_0$
+
+[**QST 1B:**]{.underline}
+
+Under same conditions as the problem above, can we reject the claim on saturated fat as stated in the food label at .01 significance level?
+
+```{r}
+(z.test=qnorm(.01,lower.tail = F))
+```
+
+$2.3263>1.6449$ thus we reject $H_0$
+
+##### [**QST2:**]{.underline}
+
+Suppose the following are the gram amount of saturated fat found in a random sample of cookies. Assuming the population standard deviation to be 0.25 grams, at .05 significance level, can we reject the claim in the food label that there are at most 2 grams of saturated fat per cookie?
+
+$H_0:\mu\le2\ vs\ H_1:\mu>2$
+
+```{r}
+x<-scan("TOH_used_datasets/cookies.txt")
+xbar=mean(x)
+n=length(x)
+sd=.25
+alpha=.05
+mu0=2
+(z<-(sqrt(n)*(xbar-mu0))/sd)
+(qnorm(.05,lower.tail = F))
+(pnorm(z,lower.tail = F))
+```
+
+$0.41331<1.6449$ and $0.33969<0.05$ we fail to reject $H_0$
+
+**Alternative**
+
+```{r}
+z.test(x,mu=mu0,stdev=0.25,alternative="greater")
+```
+
+### Two Tail Test
+
+We test the hypothesis $H_0:\mu=\mu_0\ vs\ H_1:\mu\ne\mu_0$
+
+$H_0$ is rejected iff $|Z|>Z\frac{\alpha}{2}$
+
+##### [QST1:]{.underline}
+
+Suppose the mean weight of King Penguins found in an Antarctic colony last year was 15.4 kg. In a sample of 35 penguins same time this year in the same colony, the mean penguin weight is 14.6 kg. Assume the population standard deviation to be 2.5 kg. At .05 significance level, can we reject the null hypothesis that the mean penguin weight does not differ from last year?
+
+$H_0:\mu=15.4\ vs\ H_o1:\mu\ne15.4$
+
+If $|Z=\frac{\sqrt({35}(14.6-15.4)}{2.5}| > Z_{1-\frac{\alpha}{2}}=Z_{0.025}$ we reject $H_0$
+
+```{r}
+xbar=14.6
+mu0=15.4
+n=35
+sd=2.5
+(z<-(sqrt(n)*(14.6-15.4))/sd)
+(z.test<-qnorm(1-0.05/2))
+```
+
+Since $|1.8931|>1.95$ we reject $H_0$
+
+Alternative
+
+To get the p-value of a two tail z-test, we double the p-value of the lower tail z-test
+
+```{r}
+(pval=2*pnorm(z))
+```
+
+$0.058339>0.050$ thus rejection of $H_0$
+
+**Qst 1B:**
+
+Under same conditions as the problem above, can we reject the null hypothesis at .01 significance level that the mean penguin weight stays the same as last year?
+
+reject $H_0\ iff\ |Z|>Z_{1-\frac{0.01}{2}}$
+
+```{r}
+qnorm(.01/2,lower.tail = F)
+```
+
+Alternative
+
+```{r}
+(pval=2*pnorm(z,lower.tail = T))
+```
+
+##### [QST 2]{.underline}
+
+Suppose the following are body weight of King Penguins in kilograms found in a random sample within a colony. Assuming the population standard deviation to be 2.5 kg, at .05 significance level, can we reject the null hypothesis that the mean penguin weight is still 15.4 kg just like last year?
+
+$H_0:\mu=15.4\ vs\ H_1:\mu\ne15.4$
+
+If $|Z=\frac{\sqrt{35}(14.775-15.4)}{2.5}|>Z_{0.025}$
+
+```{r}
+x<-scan("TOH_used_datasets/penguins.txt")
+xbar=mean(x)
+mu0=15.4
+n=length(x)
+sd=2.5
+(z<-(sqrt(n)*(xbar-mu0))/sd)
+(qnorm(0.05/2,lower.tail = F))
+(pval=2*pnorm(z,))
+```
+
+We reject $H_0$ since $|Z|=|1.4799|>Z_{0.025}=1.96$ and $p-value =0.1389>\alpha=0.05$
+
+Alternative
+
+```{r}
+library("TeachingDemos")
+z.test(x,mu=15.4,stdev=2.5,alternative="two.sided")
+```
+
+## B. Variance is Unknown (student t-distribution)
+
+### Two Tail Test
+
+Just like before the hypothesis tested is $H_0:\mu=\mu_0\ vs\ H_1:\mu\ne\mu_0$
+
+The test statistics is of the form:
+
+$t=\frac{\sqrt{n}(\bar{X}-\mu_0)}{S}\sim t(n-1)$, where $S^2=\frac{1}{n-1}\sum(X_i-\bar{X})^2$
+
+We reject $H_0$ when $|t|>t_\frac{\alpha}{2}(n-1)$ and when $p-value<\alpha$
+
+##### [QST1:]{.underline}
+
+Suppose the mean weight of King Penguins found in an Antarctic colony last year was 15.4 kg. In a sample of 35 penguins same time this year in the same colony, the mean penguin weight is 14.6 kg. Assume the sample standard deviation to be 2.5 kg. At .05 significance level, can we reject the null hypothesis that the mean penguin weight does not differ from last year?
+
+$H_0:\mu=15.4\ vs\ H_1:\mu\ne15.4$
+
+$t=\frac{\sqrt{35}(14.6-15.4)}{2.5}$
+
+```{r}
+xbar=14.6
+mu0=15.4
+sd=2.5
+n=35
+(t<-(sqrt(35)*(14.6-15.4))/sd)
+(t.test<-qt(.05/2,df=n-1,lower.tail = F))
+```
+
+since $|1.8931|<2.0322$ we fail to reject $H_0$
+
+Alternative
+
+```{r}
+(pval=2*pt(t,df=n-1))
+```
+
+since $.066876>.05$ we fail to reject $H_0$
+
+[QST 1B:]{.underline}
+
+Under same conditions as the problem above, can we reject the null hypothesis at .01 significance level that the mean penguin weight stays the same as last year?
+
+```{r}
+(t.test<-qt(.01/2,n-1,lower.tail = F))
+```
+
+${1.8931<2.7284}$ thus we fail to reject $H_0$
+
+##### Q[**ST 2:**]{.underline}
+
+Suppose the following are body weight of King Penguins in kilograms found in a random sample within a colony. Without knowledge of the population standard deviation, at .05 significance level, can we reject the null hypothesis that the mean penguin weight is still 15.4 kg just like last year?
+
+$H_0:\mu=15.4\ vs\ H_1:\mu\ne15.4$
+
+```{r}
+x<-scan("TOH_used_datasets/penguins2.txt")
+xbar=mean(x)
+n=length(x)
+sd=sd(x)
+mu0=15.4
+(t<-(sqrt(n)*(xbar-mu0))/sd)
+(t_test<-qt(.05/2,n-1,lower.tail = F))
+(pval<-2*pt(t,n-1))
+
+
+```
+
+$|1.3943|<2.0322$ we fail to reject the null hypothesis and since $0.17227>0.05$ we fail to reject $H_0$
+
+# 2. Hypothesis test for population proportions
+
+### Lower Tail Test
+
+We test the hypothesis $H_0:\mu> p_0\ vs\ H_1:\mu\le p_0$
+
+Let $X\sim f_X(x)$ where $f_X(x)$ is a certain distribution with mean and variance $\mu\ and\ \sigma^2$ respectively
+
+Under Central Limit Theorem,
+
+$\sum X_i\sim N(\mu n,\sigma^2 n)$
+
+Thus our z-statistics is defined as: $Z=\frac{x-\mu n}{\sigma \sqrt{n}}=\frac{\bar{p}-p_0}{\sqrt{\frac{p_0(1-p_0)}{n}}}$
+
+Where $p$ is the proportion/probability
+
+##### QST 1:
+
+Suppose 60% of citizens voted in the last election. 85 out of 148 people in a telephone survey said that they voted in current election. At 0.5 significance level, can we reject the null hypothesis that the proportion of voters in the population is above 60% this year?
+
+$$
+p(x=85)=p(Z=\frac{85-148(0.6}{\sqrt{0.6(1-0.6)*148}})=\phi(\frac{85-148(0.6}{\sqrt{0.6(1-0.6)*148}})=\phi(\frac{\frac{85}{148}-0.6}{\sqrt{0.6(1-0.6)/148}})
+$$
+
+```{r}
+pbar<-85/148 #sample proportion
+p0=.6 #hypothesis
+n=148 #sample size
+(z=(pbar-p0)/sqrt(p0*(1-p0)/n)) #test statistics
+
+alpha=.05 
+(z.alpha<-qnorm(0.05,lower.tail = T))
+
+```
+
+Since $-0.6376>-1.6649$ we fail to reject $H_0$
+
+**Alternative 1**
+
+```{r}
+pnorm(z)
+```
+
+Since $0.26187>0.05$ we fail to reject $H_0$
+
+**Alternative 2 :**computes p-value directly
+
+```{r}
+prop.test(85,148,0.6,alt="less",correct = F)
+```
+
+##### **QST 1B:**
+
+Under same conditions as the problem above, can we reject the null hypothesis at.01 significance level that the voting percentage is above 60% this year?
+
+```{r}
+qnorm(0.01,lower.tail = T)
+```
+
+$-0.6376>-2.3263$ we fail to reject $H_0$, also our $p.value>\alpha$ thus we fail to reject $H_0$
+
+## Upper Tail
+
+We test the hypothesis $H_0\mu\le p_o\ vs\ H_1:\mu>p_o$
+
+test statistics is $Z=\frac{\bar{b}-p_0}{\sqrt{p_0(1-p_0)/n}}$
+
+We reject $H_0$ iff $Z>Z_\frac{\alpha}{2}$
+
+##### QST 1:
+
+Suppose that 12% of apples harvested in an orchard last year was rotten. 30 out of 214 apples in a harvest sample this year turns out to be rotten as well. At .05 significance level, can we reject the null hypothesis that the proportion of rotten apples in harvest stays below 12% this year?
+
+$Z=\frac{30/214-0.12}{\sqrt{0.12(1-0.12)/214}}$
+
+```{r}
+pbar=30/214
+p0=0.12
+n=214
+(z<-(pbar-p0)/sqrt(p0*(1-p0)/n))
+(z.test<-qnorm(.05,lower.tail = F))
+pnorm(z,lower.tail = F)
+```
+
+since $0.90875<1.6449\ and\ 0.18174>0.05$ we fail to reject null hypothesis
+
+**Alternative**
+
+```{r}
+prop.test(30,214,p=0.12,alt="greater",correct =F )
+```
+
+## Two Tail
+
+The test hypothesis is $H_0:\mu=p_0\ vs\ H_1:\mu\ne p_0$
+
+test statistics is of the form $Z=\frac{\bar{p}-p_0}{\sqrt{p_0(1-p_0)/n}}$
+
+We reject the null hypothesis if $|Z|>Z_\frac{\alpha}{2}$
+
+##### QST 1:
+
+Suppose a coin toss turns up 12 heads out of 20 trials. At .05 significance level, can one reject the null hypothesis that the coin toss is fair?
+
+$Z=\frac{12/20-0.5}{0.5(1-0.5)/20}$
+
+```{r}
+pbar=12/20
+p0=.5
+n=20
+(z<-(pbar-p0)/sqrt(p0*(1-p0)/n))
+(z.test<-qnorm(.05/2,lower.tail = F))
+(pval=2*pnorm(z,lower.tail=F))
+```
+
+**Alternative**
+
+```{r}
+prop.test(12,20,p=.5,alt="two.sided",correct = F)
+```
+
+**QST 1B:**
+
+Under same conditions as the problem above, can we reject the null hypothesis at .01 significance level that the coin is fair?
+
+$Z=\frac{(\bar{p}-0.5)}{\sqrt{0.5(1-0.5)/20}}$, $\bar{p}=\frac{12}{20}$
+
+```{r}
+(z<-(pbar-p0)/sqrt(p0*(1-p0)/20))
+(z.test=qnorm(.01/2,lower.tail = F))
+```
+
+Since $0.89443<2.5758$ we fail to reject $H_0$
+
+**Alternative**
+
+```{r}
+prop.test(12,20,p=.5,alt="two.sided",conf.level = .99,correct = F)
+```
+
+Since $0.37>0.01$ we fail to reject $H_0$

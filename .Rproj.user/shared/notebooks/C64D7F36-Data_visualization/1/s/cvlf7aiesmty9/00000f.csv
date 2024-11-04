@@ -1,0 +1,4 @@
+"0","    data(cars)"
+"0","    cars %>% plot(cars$speed,cars$dist,data=.,"
+"0","                  main=""Cars data"","
+"0","                  xlab=""Speed"",ylab=""Stopping distance"")"

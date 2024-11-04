@@ -1,0 +1,10 @@
+"0","library(tidyr)"
+"2","
+Attaching package: ‘tidyr’
+
+"
+"2","The following object is masked from ‘package:magrittr’:
+
+    extract
+
+"

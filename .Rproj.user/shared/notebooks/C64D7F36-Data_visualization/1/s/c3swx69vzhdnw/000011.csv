@@ -1,0 +1,2 @@
+"0","longley %>% ggplot(aes(x=Year)) +   geom_point(aes(y=Unemployed)) +   geom_point(aes(y=Armed.Forces),col=""blue"") +   geom_line(aes(y=Unemployed)) +   geom_line(aes(y=Armed.Forces),col=""blue"")"
+"0",""

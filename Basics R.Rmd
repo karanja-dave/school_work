@@ -1,0 +1,985 @@
+---
+title: "Chapter 8 R Basics"
+output: html_document
+date: "2024-05-15"
+---
+
+# Expressions
+
+## Arithmetic Expressions
+
+`/` is used in division
+
+`%%` is used in modulus division- Returns the remainder
+
+`%/%` used in integer division- Returns integers from divisions getting rid of decimal/floats
+
+```{r}
+5/2
+5%%2
+5%/%2
+```
+
+## Boolean Expressions
+
+They are expressions whose output is either true or false.
+
+`!` Logical operator not that negates values
+
+```{r}
+!TRUE
+!FALSE
+```
+
+`|` logical element wise OR operator- Returns TRUE if at least one condition is TRUE
+
+`&` logical element wise AND operator - Only returns true if all are TRUE
+
+```{r}
+x<-c(T,F,T,F)
+y<-c(T,T,F,F)
+x|y
+
+x&y
+```
+
+# Basic Data Types
+
+-   The `class()` is used to check the data type of data
+
+## 1. Numeric Data
+
+-   It is data whose values are members of real number
+
+-   Such as :
+
+    -   Integers(whole numbers)
+
+    -   Double/Floats/Decimals
+
+    -   Fractions
+
+    -   Complex/imaginary numbers
+
+-   We can coerce data to Numeric using the `as.numeric()`
+
+-   We can check if numeric using the `is.numeric()`
+
+```{r}
+is.numeric(2)
+class(2)
+```
+
+## 2. Integer data
+
+-   It is data whose values are whole numbers
+
+-   By default R saves all numbers as Numeric.
+
+-   To coerce a number as Integer, we add a prefix `L` to it
+
+-   We can also use the `as.integer()`
+
+-   When a decimal is coerced as integer it loses its floating numbers
+
+```{r}
+is.integer(2)
+is.integer(2L)
+x<-as.integer(2)
+class(2L)
+class(x)
+as.integer(2.5)
+```
+
+## 3. Complex Data
+
+-   Refers to data that is imaginary
+
+-   Imaginary implies that the data is not a member of the real numbers
+
+-   A number is defined as complex if it has a prefix `i`
+
+```{r}
+1+0i
+is.complex(1+0i)
+class(1+0i)
+```
+
+-   Dealing with complex data enables us find the square root of negative numbers
+
+```{r}
+sqrt(as.complex(-1))
+```
+
+## 4. Logical data
+
+-   Refers to data whose output can be TRUE/FALSE
+
+```{r}
+x<-5>4
+class(x)
+is.logical(x)
+```
+
+## 5. Character Data
+
+-   Refers to data whose values are strings
+
+-   Any data value inside double `""` or single `''` quotations marks is regarded as a string
+
+```{r}
+x<-"hello world"
+class(x)
+is.character(x)
+as.character(3.14)
+```
+
+# Data Structures
+
+-   By concatenating simple data types, you create data structures and they include
+
+## 1. Vectors
+
+-   A vector is a one dimension data structure that stores data of the same type
+
+-   Vectors are also called atomic sequences
+
+```{r}
+v<-c(1,2,3)
+1:3
+rep("foo",3)
+```
+
+-   We can check if a data structure is a vector using the `is.atomic()` or `is.vector()` functions
+
+```{r}
+is.atomic(v)
+is.vector(v)
+```
+
+-   In the event a vector has an attribute then `is.vector()` will return FALSE
+
+-   The `is.atomic()` returns TRUE confirming that its a vector even though it has attributes
+
+```{r}
+v<-1:3
+is.vector(v)
+attr(v,"foo")<-"bar"
+is.vector(v)
+is.atomic(v)
+```
+
+-   In the event you have different data types in a vector, R trys to coerce them to the most suitable data type and it follows the below priority
+
+    -   Character
+
+    -   Complex
+
+    -   Numeric
+
+    -   Integer
+
+    -   Logical
+
+```{r}
+x<-c(1,2,3i,"foo",2L,2<3)
+class(x)
+x<-c(1,2,3i,2L,2<3)
+class(x)
+x<-c(1,2,2L,2<3)
+class(x)
+x<-c(2L,2<3)
+class(x)
+x<-2<3
+class(x)
+```
+
+## 2. Matrix
+
+-   It is a 2 dimensional data structure that stores data of the same type
+
+-   A matrix is a 2 dimensional vector
+
+    -   The `dim()` is used to define the dimensions(rows and columns) of a vector to make it a matrix
+
+    -   The `attribute()` function is used to check the dimensions of a matrix
+
+```{r}
+v<-1:6
+attributes(v) #returns null as v has no dimensions yet
+dim(v)<-c(2,3) #We've defined the dimensions of v making it amatrix with 2 rows and 3 columns
+attributes(v) # checks dimensions
+dim(v) # checks dimensions
+v # is now a matrix with 2 rows and 3 columns
+```
+
+-   By default values in a vector r added column-wise by R
+
+-   The `matrix()` is used to create matrices and can be used to define if data is to be input row wise or column wise
+
+-   The argument `byrow=T` indicates that data is input row-wise into a matrix
+
+```{r}
+v<-1:6
+v<-matrix(v,nrow=2,ncol=3,byrow=F);v
+v<-1:6
+v<-matrix(v,nrow=2,ncol=3,byrow=T);v
+```
+
+-   **NB:** In Matrices , `*` is used for scalar multiplication while `%*%` is used for matrix multiplication
+
+```{r}
+(a<-matrix(1:4,nrow=2))
+(b<-matrix(5:8,nrow=2))
+a*b
+a%*%b
+```
+
+-   `t()` is used to transpose a matrix while the `solve()` is used to inverse a matrix
+
+```{r}
+t(a)
+solve(a)
+solve(a)%*%a
+```
+
+## 3. Lists
+
+-   Lists and Arrays store data in layers
+
+-   A list is a one dimension data structures that stores different data types in layers
+
+-   An Array is a 2 dimensional data structure that stores different data types in layers
+
+-   A Data structure is a 2 dimensional data structure that stores differenet data types
+
+-   The `list()` function is used to create lists
+
+-   
+
+```{r}
+list(1:3,5:8) # A list of 2 vectors 
+list(1:3,c(T,F))
+```
+
+-   We can also create **recurrsive lists** (A list inside another list )
+
+```{r}
+list(list(),list(list(),list()))
+```
+
+```{r}
+(list_s<-list(c("jan","feb",'march','april'),
+             matrix(c(3,9,5,1,-2,8),nrow = 2),
+             list("flowers",'chocolate')))
+```
+
+-   The `unlist()` is used to reduce a list into a vector
+
+```{r}
+unlist(list(1:4,5:7))
+```
+
+### Indexing
+
+The `?"[["` displays documentation for indexing in R
+
+```{r}
+?"[["
+```
+
+-   We use indexing to access elements of different data structures
+
+1.  **Indexing Vectors**
+
+```{r}
+v<-1:4
+v[2]
+v[2:3]
+# Special case for using vector of indices
+v[c(1,1,4,3,2)]
+v[-1]
+v[-(1:2)]
+```
+
+-   You can't combine negative and positive indices
+
+-   Another way to index is by using Boolean expressions or a Boolean vector
+
+-   The Boolean vector should be of the same size as the vector
+
+```{r}
+v[v%%2==0]
+
+```
+
+-   By Indexing you can assign values to a vector or add new values
+
+```{r}
+v[v%%2==0]<-13;v
+```
+
+2.  **Indexing matrices**
+
+```{r}
+m<-matrix(1:6,nrow=2,byrow=T);m
+m[1,] #access 1st row
+m[,1] # access 1st column
+```
+
+-   When accessing a single row or column, it is reduced to a vector
+
+-   Using the argument `drop=F` we maintain the single rows and columns as 2 dimensional
+
+```{r}
+m<-matrix(1:6,nrow=2, byrow=T);m
+m[1,,drop=F]
+m[,1,drop=F]
+```
+
+-   We can also index out a sub matrix by providing ranges in one or more dimensions
+
+```{r}
+m[1:2,1:2]
+```
+
+3.  **Indexing Lists**
+
+-   **NB:** When sub-setting list using indexing`[]` we get another list
+
+-   This case applies even if you're sub-setting a single element
+
+    -   Reason: When sub-setting a single element your'e not getting that elemnt but the list that contains it
+
+```{r}
+L<-list(1,2,3)
+L[1]
+```
+
+-   To get that element instead, you have to use double square brackets
+
+```{r}
+L[[1]]
+```
+
+### Named values
+
+-   Elements in vectors or lists can have names
+
+-   These are the attributes that don't affect the values of the elements and can be used to refer to them
+
+```{r}
+v<-c(a=1,b=2,c=3,d=4);v
+l<-list(a=1:5,b=c(T,F));l
+```
+
+-   The `names()`function can also be used in naming the elements
+
+```{r}
+names(v)<-LETTERS[1:4];v
+```
+
+-   The names of this elements can be used to Access them
+
+-   This is referred to as string indexing
+
+```{r}
+v["A"]
+l['a']
+l[["a"]]
+```
+
+-   When elements are named, one can use the `$` to access the elements
+
+-   Essentially it works like the `[[]]` But there's no need of having the names in quotations
+
+-   **NB: `$`** can't be applied to vectors
+
+```{r}
+l$a
+```
+
+-   When `[[]]` is used in vectors, it allows you to only extract one element and if the element is name, the name is removed
+
+```{r}
+v
+v[[1]]
+
+```
+
+## 4. Factors
+
+-   They are data structures whose data are categorical values which are stored as labels
+
+## 5 Formulas
+
+-   They are mathematical expression used in computation
+
+-   In R the are created using the `~` where the variable o n the left is the response(dependent) variable and that on the right is the predictor (independent) variable
+
+# Control Structures
+
+-   Control structures are used to determine the flow of execution of a program
+
+-   They are of 2 types:
+
+    1.  Selection/ if statements
+    2.  Loops
+
+## A. Selection Statements
+
+1.  **`if statement`**
+
+-   It tests only one condition
+
+-   If condition is TRUE, it executes the expressions in the if statement
+
+-   Example :
+
+```{r}
+x<-5
+if(x>0){
+  print("Positive number")
+}
+```
+
+-   And if FAlSE the program stops
+
+```{r}
+x<- -5
+if(x>0){
+  print("Negative number")
+}
+```
+
+2.  **`if else statement`**
+
+-   It tests only one condition
+
+-   If condition is TRUE it executes the expressions in the if statement, otherwise it executes expressions in the else statement
+
+-   Example:
+
+```{r}
+x<- -5
+if(x>0){
+  print("Positive number")
+} else {
+  print("Negative number")
+}
+```
+
+```{r}
+x<-runif(1,0,10);x
+if(x>3){
+  y=10
+} else{
+  y=0
+  
+};print(y)
+
+```
+
+3.  **Nested `if else statements`**
+
+-   It tests multiple condtions conditions (at least 2 conditions)
+
+```{r}
+x<-0
+if(x<0){
+  print("Negative number")
+} else if (x>0){
+  print("Positive number")
+} else{
+  print("Zero")
+}
+
+```
+
+4.  **`ifelse()` function**
+
+-   Unlike the `if statements` the `ifelse()` function tests for conditions element wise
+
+-   To test for conditions using `if statements` one has to employ loops when working with vectors to perform element wise testing
+
+-   This is not necessary using the `ifelse()`function
+
+```{r}
+a<-c(5,7,2,9)
+ifelse(a%%2==0,"Even number","Odd number")
+```
+
+## B. Loops
+
+-   Loops are used to iterate given commands without necessarily writing codes for each commands
+
+1.  **For loops**
+
+-   They perform a finite number of iterations on given commands
+
+-   The `seq_along()` and `length()` functions are used in loops to enable iterating through the indices of a vector
+
+```{r}
+for(i in 1:4){
+  print(i)
+}
+```
+
+```{r}
+x<-c("foo","bar","baz")
+for(i in seq_along(x)){
+  print(i)
+  print(x[i])
+}
+```
+
+```{r}
+for(i in 1:length(x)){
+  print(i)
+  print(x[i])
+}
+```
+
+-   `seq_along()` is more effective than `length()`
+
+    -   **Reason:** In the event we have empty(null) values `length()` considered them as values and R assumes that they have indices. This could lead to errors
+
+    -   `seq_along()` on the other hand doesn't make this assumption, the loop is stopped in the event a null value is encountered
+
+```{r}
+x<-c()
+for(i in 1:length(x)){
+  print(i)
+  print(x[i])
+}
+```
+
+```{r}
+x<-c()
+for(i in seq_along(x)){
+  print(i)
+  print(x[i])
+}
+```
+
+-   Even though the `next` and `break` statements are commonly used with `repeat` loops , they can be used in other control structures
+
+```{r}
+for(i in 1:100){
+  if(i%%2==0){
+    next
+  }else if (i>5){
+    break
+  }
+  print(i)
+}
+```
+
+-   `while` and `repeat` loops are not commonly used so we'll briefly check them out
+
+2.  **`while`**loops
+
+-   They perform iteration on command until a condition is satisfied
+
+```{r}
+count<-0
+while(count<10){
+  print(count)
+  count=count+1
+}
+```
+
+```{r}
+x=1
+while(x<=5){
+  print(x^2)
+  x=x+1
+}
+```
+
+-   **NB:** The `seq_along()`doesn't work in while loops and thus the `length()` is used
+
+### Disclaimer using loops
+
+-   In R loops are considered to be slow.
+
+-   R is a dynamic language (functions and variables change at any time from execution of the program)
+
+-   This makes it hard for the interpreter to optimize code before it runs it
+
+-   R is also a functional language which typically means loops are not used
+
+-   The construction of a loop involves changing value of a looping variable or the Boolean expression while executing the code which is considered disadvantageous
+
+-   Instead recursive functions are used for looping
+
+# Functions
+
+-   We mostly will deal with user defined functions
+
+-   These are functions that have been created by the user to perform specific purposes
+
+For instance the below function prints a statement and returns the value 5
+
+```{r}
+f<-function(){
+  print("Hello world")
+  5
+}
+f()
+```
+
+-   Most user defined functions have arguments which are simply variable names
+
+-   The arguments are assigned values when you call the function
+
+-   The values are used inside the function body for execution
+
+-   Examples:
+
+```{r}
+plus<-function(x,y){
+  print(paste(x,"+",y,"is",x+y))
+  x+y
+}
+plus(2,2)
+```
+
+```{r}
+div<-function(x,y){
+  print(paste(x,"/",y,"is",x/y))
+  x/y
+}
+div(6,2)
+```
+
+## Named arguments
+
+-   The order of arrangement of function matters as it determines which argument gets to be assigned which value
+
+-   Check out below:
+
+```{r}
+div(6,2)
+div(2,6)
+```
+
+-   In the event that the arguments are many, it is hard to keep track of the position of the arguments
+
+-   Thus if arguments are named just like those of our previous functions, we can define their values when calling them and thus we don't have to rely on the order or position of the argument
+
+```{r}
+div(x=6,y=2)
+div(x=2,y=6)
+```
+
+-   **NB:** Avoid using `<-` and `->` when defining the values of arguments
+
+-   In most cases the code will run but will not give the expected output
+
+## Default parameters
+
+-   When creating a function you can assign a value to its argument
+
+-   This enables you to call the function without giving values for the arguments
+
+-   It is also possible to modify these values by specifying new values when calling the function
+
+```{r}
+pow<-function(x,y=2) x^y
+pow(2)
+pow(3)
+pow(2,3)
+pow(3,3)
+```
+
+-   The default value of the parameter is used whenever you don't provide the parameter value at the function calling
+
+```{r}
+n_f<-function(a=3,b=6){
+  print(a*b)
+}
+n_f()
+n_f(9,5)
+```
+
+## Return values
+
+It is the last expression in the statements executed in the body of a function , unless control structures are involved
+
+-   The `return()` function is used to return any expression used as it's argument
+
+-   Check the 2 codes below
+
+```{r}
+safe_div<-function(x,y){
+  if(y==0){
+    NA
+  }else{
+    x/y
+  }
+}
+safe_div(4,2)
+safe_div(4,0)
+```
+
+```{r}
+safe_div<-function(x,y){
+  if(y==0){
+    return(NA)
+  }
+  x/y
+}
+safe_div(4,2)
+safe_div(4,0)
+```
+
+## Lazy Evaluation
+
+-   This typically means thats expressions in a function's body are not evaluated until they are needed
+
+-   This makes default arguments more flexible to work with
+
+```{r}
+f<-function(x,y=x^2) y+x
+f(2)
+```
+
+-   In the chunk above, `y` is used before its actually evaluated
+
+-   `y` has a default value that depends on `x`
+
+-   When the function is declared, `f<-function(x,y=x^2)y+x`, the value of `x` is unknown, `y` isn't evaluated and thus it's value doesn't matter
+
+-   When we call the function, we have the value of `x` and the value of `y` is needed thus the expression of `y`,`y=x^2` is evaluated
+
+-   In the function body when you define a value for `x` when declaring a function and it comes before `y` then `y` becomes depend on the value of `x` inside the body and not the value of `x` when calling the function
+
+-   See the chunk below
+
+```{r}
+f<-function(x,y=x^2){
+  x<-0
+  x+y
+}
+f(2)
+```
+
+-   But if inside the function body `y` comes before `x` (has a defined value) then `y` is dependent on the value of `x` when calling the function
+
+```{r}
+f<-function(x,y=x^2){
+  x+y
+  x<-0
+}
+f(2)
+```
+
+-   Lazy evaluation lets you specify default arguments(parameters) that are depend on other parameters
+
+## Scoping
+
+-   When a variable is used in a function and it is not defined in the function or is not part of the function's parameter, R searches for the variable in the `Global Enviroment` to get it's value that is used in it's evaluation.
+
+-   This is what we refer to as scooping
+
+```{r}
+x<-"x"
+f<-function(y){
+  g<-function() c(x,y)
+  g()
+}
+
+f("a")
+```
+
+-   In the chunk above we have a global variable `x` and a parameter variable `y`
+
+-   We have our function `f` whose body has another function `g`
+
+-   The function `g` does not define `x` and `y` nor takes them as its parameters but it returns them when called
+
+-   Since `x` and `y` are not defined in `g,` R searches outside `g` to find their values used in evaluation of `g`
+
+-   It finds that `y` is a parameter of `f` and `x` is a global variable
+
+-   The variables `g` refers to are variables and not values when `g` is declared(created)
+
+-   When we update the variables, it changes the values `g` returns
+
+```{r}
+x<-"x"
+f<-function(y){
+  g<-function() c(x,y)
+  y<-"z"
+  g()
+}
+f("a")
+```
+
+## to be continued
+
+## Recursive functions
+
+-   This refers to functions that call themselves
+
+-   Solving a problem involves breaking it up into smaller bits that can be done right away
+
+-   The basis of recursion is to reduce a problem into small finite sizes
+
+-   Consider the function below that give the factoral of a number
+
+```{r}
+fact<-function(n){
+  if (n==0|n==1){
+    1
+  }else{
+    n*factorial(n-1)
+  }
+}
+fact(0)
+fact(1)
+fact(2)
+fact(6)
+```
+
+-   This is an algorithmic strategy called divide and conqueror where we break down a problem into sub-problems and merge the results of the sub problems
+
+```{r}
+merg_e<-function(x,y){
+  if(length(x)==0) return(y)
+  if(length(y)==0) return(x)
+  if(x[1]<y[1]){
+    c(x[1],merge(x[-1],y))
+  }else{
+    c(y[1],merge(x,y[-1]))
+  }
+}
+merg_e(1:5,NULL)
+merg_e(6,5)
+```
+
+-   The chunk above sorts a sequence of numbers in ascending order
+
+-   Here's a chunk that calls itself
+
+```{r}
+merge_sort<-function(x){
+  if(length(x)<2){
+    n<-length(x)
+    m<-n%%2
+    print(merge(merge_sort(x[1:m]),merge_sort(x[(m+1):n])))
+  }
+}
+merge_sort(seq_len(3))
+```
+
+-   The chunk below is a recursive function where our user-defined function calls itself
+
+```{r}
+a<-function(k){
+  if(k>0){
+    result=k+a(k-1)
+    print(result)
+  } else{
+    result=0
+    return(result)
+  }
+}
+a(6)
+```
+
+-   The chunk works as a loop and here's the break down of the code
+
+| a(k) | Condition | result  | print(result) |
+|:----:|:---------:|:-------:|:-------------:|
+| a(6) |   TRUE    | 6+a(5)= |    6+15=21    |
+| a(5) |   TRUE    | 5+a(4)= |    5+10=15    |
+| a(4) |   TRUE    | 4+a(3)= |    4+6=10     |
+| a(3) |   TRUE    | 3+a(2)= |     3+3=6     |
+| a(2) |   TRUE    | 2+a(1)= |     2+1=3     |
+| a(1) |   TRUE    | 1+a(0)= |     1+0=1     |
+| a(0) |   FALSE   |   0=    |       0       |
+
+-   The 1^st^ 3 columns are evaluated row-wise and the lats column is evaluated column-wise in ascending order
+
+## Exercise
+
+### 1. Fibonacci Numbers
+
+**QST:**
+
+-   Fibonacci numbers are defined as follows:
+
+    -   The 1^st^ 2 Fibonacci numbers are 1, Ie; F~1~=F~2~=1
+
+    -   Consecutive Fibonacci numbers are defined as F~i~=F~i-1~+F~i-2~
+
+-   Implement a recursive function to compute the nth Fibonacci number
+
+```{r}
+f<-c(1,1)
+for(i in 1:10){
+  f=c(f,f[i-1]+f[i-2])
+}
+print(f)
+#The above is a for loop that gives an idea of a Fibonacci Sequence
+```
+
+```{r}
+fib_recursive <- function(n) {
+  if(n == 1) {
+    return(1)
+  } else if(n == 2) {
+    return(c(1, 1))
+  } else {
+    previous_fib <- fib_recursive(n - 1)
+    return(c(previous_fib, sum(tail(previous_fib, 2))))
+  }
+}
+
+# Test the function
+fib_recursive(10)  # Prints the first 10 Fibonacci numbers
+
+```
+
+```{r}
+fib_recursive <- function(n) {
+  if(n <= 0) {
+    stop("n must be a positive integer.")
+  } else if(n == 1 || n == 2) {
+    return(1)
+  } else {
+    return(fib_recursive(n - 1) + fib_recursive(n - 2))
+  }
+}
+
+# Test the function
+n <- 10
+result <- fib_recursive(n)
+cat("The", n, "th Fibonacci number is:", result)
+
+```
+
+```{r}
+fib_iterative <- function(n) {
+  if(n <= 0) {
+    stop("n must be a positive integer.")
+  } else if(n == 1 || n == 2) {
+    return(1)
+  } else {
+    fib_sequence <- numeric(n)  # Initialize a vector to store Fibonacci numbers
+    fib_sequence[1:2] <- c(1, 1)  # Set the first two Fibonacci numbers
+    for(i in 3:n) {
+      fib_sequence[i] <- fib_sequence[i - 1] + fib_sequence[i - 2]  # Compute the Fibonacci number iteratively
+    }
+    return(fib_sequence[n])  # Return the nth Fibonacci number
+  }
+}
+
+# Test the function
+n <- 10
+result <- fib_iterative(n)
+cat("The", n, "th Fibonacci number is:", result)
+
+```

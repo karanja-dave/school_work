@@ -1,0 +1,765 @@
+---
+title: "CHAPTER4-DATA VISUALIZATION"
+date: "2024-05-02"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+Data visualization is the use of plots and graphs to study data\
+Let's begin with the basic plot
+
+## Basics Graphics
+
+The `graphics` package has some functions used in basic plotting\
+There's no need to load the package `library("graphics")` as it's loaded when R starts.\
+TO get most of the functions used run the chunk below
+
+```{r,eval=FALSE}
+library(help="graphics")
+```
+
+The code opens a documentation that gives a list of functions used in basic plotting\
+1. **Scatter plot and line plot** The simplest plot is the scatter plot\
+- A scatter plot is a 2 dimensional plot that shows the relationship of 2 continuous variables where each data point is represented by a single dot
+
+```{r}
+    x<-rnorm(50)
+    y<-rnorm(50)
+    plot(x,y)
+```
+
+Let's say we want to have a plot from a `dataframe`\
+R is not able to know which column it's supposed to plot on right and left axis\
+There are 2 ways to offset this,
+
+```{r,echo=F,warning=F}
+library("magrittr")
+```
+
+1.  **Accessing the columns manually**
+
+```{r,warning=F}
+    data(cars)
+    cars %>% plot(cars$speed,cars$dist,data=.,
+                  main="Cars data",
+                  xlab="Speed",ylab="Stopping distance")
+```
+
+2.  **Using %\$% `exposition` pipe to access columns**
+
+```{r}
+     cars %$% plot(speed,dist,
+                  main="Cars data",
+                  xlab="Speed",ylab="Stopping distance") 
+```
+
+```         
+-   `main` is used to name our plot  
+-   `xlab` gives name(labels) the x-axis  
+-   `ylab` labels the y-axis  
+-   By default plot shows data as points, this can be changed using arguments  
+-   For instance we can have our data shown as lines by adding the argument `type=h`  
+```
+
+```{r}
+    cars %$% plot(speed,dist,main="Cars data",type="h",
+                  xlab="Speed",ylab="Stopping distance") 
+```
+
+2.  **Histogram**\
+    Its a 2 dimensional plot that displays the frequency distribution of data\
+    The x-axis is for the data while the y-axis is for the frequency\
+    The `hist()` function is used to plot one
+
+```{r}
+cars%$%hist(speed,breaks=10)
+```
+
+*NB:* *A `plot()` is a generic function. This implies it has different functionality based on the arguments you give it*
+
+3.  **A simple linear regression curve**\
+
+-   The `lm()` function is used to fit linear models
+-   It has the argument `y~x`which shows the relationship between x and y where y is the response(dependent) variable and x the predictor(independent) variable
+
+```{r}
+cars %>% lm(dist~speed,data=.) %>% plot
+```
+
+The chunk will give several summary plots for visualizing quality of the linear fit
+
+**More arguments in `plot` include `lines()points()` that add lines and points respectively to existing plot**
+
+```{r}
+data(longley)
+str(longley)
+longley %>% plot(Unemployed~Year,data=.,type="l")
+longley %>% lines(Armed.Forces~Year,data=.,col="blue")
+```
+
+-   `?longley` gives description of the data set
+-   We've plotted the graphs of unemployment against year and armed forces against year on the same plot by using the `lines()` function
+-   However the all values of `Armed.Forces` are not fitted in our graph
+-   This is because `plot()` takes \`Unemployment as the y-axis
+-   To offset it we use the argument `ylim()` to fit the 2 variables as the y-axis
+
+```{r}
+longley %>% plot(Unemployed~Year,data=.,type="l",
+                 ylim=range(c(Unemployed,Armed.Forces)))
+longley %>% lines(Armed.Forces~Year,data=.,col="blue")
+```
+
+**Fitting line of best fit**
+
+The `abline()` function is used to plot straight lines Together with `lm()` the can be used to plot a line of best fit
+
+```{r}
+cars %>% plot(dist~speed,data=.)
+cars %>% lm(dist~speed,data=.) %>% abline(col="red")
+```
+
+**plotting `iris` data with data points of different shapes according to species**
+
+```{r}
+shape_map<-c("setosa"=1,
+             "versicolor"=2,
+             "virginicia"=3)
+iris %$% plot(Petal.Length~Petal.Width,
+              pch=shape_map[Species])
+```
+
+-   `pch` is used to add points in a plot
+
+-   points are added as shapes which are defined using integers
+
+-   use `?pch` to check out more about integers and their assigned shapes
+
+-   The functions of `graphics` package are used for low level plotting
+
+-   We will graduate to the `ggplot2` package that is used for high level plotting
+
+## The Grammar of Graphics and `ggplot2` package
+
+[**CLICK HERE**](https://ggplot2-book.org/getting-started) to access documentation of the package. Use `library(help="ggplot")` to get a list of functions of this package Let's install and load the package
+
+```{r,eval=F}
+install.packages("ggplot2")
+```
+
+```{r,warning=F,comment=NA}
+library("ggplot2")
+```
+
+The package gives a domain specific language for plotting just like `dplyr` that gives a domain specific language for manipulating data
+
+# Using `qplot()`
+
+Works like `plot()` but is better\
+By default, it plots scatter plots
+
+```{r,warning=FALSE}
+cars %>% qplot(speed,dist,data=.)
+```
+
+**1. Scatter plot**\
+**NB:** `qplot()` creates a `ggplot` object before plotting unlike the `plot()` which plots directly Thus when you print this object the output is the graph to be plotted. ie,
+
+```{r,warning=FALSE}
+p<-cars %>% qplot(speed,dist,data=.)
+p
+```
+
+This is equivalent to:
+
+```{r,warning=FALSE}
+p<-cars %>% qplot(speed,dist,data=.)
+print(p)
+```
+
+With `qplot()` it simpler to plot iris data with data points of different colors based on species than it was with `plot`
+
+```{r}
+iris %>% qplot(Petal.Width,Petal.Length,
+               color=Species,data=.)
+```
+
+## 2. Histogram
+
+By giving one argument to the `qplot()` it plots a histogram
+
+```{r}
+cars %>% qplot(speed,data=.,bins=10)
+```
+
+The `bins` argument is used to specify intervals.\
+If not specified, R will by default choose a suitable interval
+
+In the event you wanted a density plot, you can ask R for it\
+A **Density** plot displays frequency distribution of data using curves
+
+```{r}
+cars %>% qplot(speed,data=.,geom="density")
+```
+
+**`geom`** stands for geometry and is used to determine how data should be visualized or displayed\
+One can add more that one geometry to a plot ie;
+
+-   lines
+-   bar plot
+-   violin plots
+-   etc
+
+## Using Geometries
+
+```{r}
+cars %>% qplot(speed,dist,data=.)
+```
+
+To create the plot above using geometries
+
+-   Create a ggplot object
+-   Map your variables from the data frame,
+    -   speed mapped to x-axis
+    -   dist mapped to y-axis
+-   Plot the data as points
+
+```{r}
+ggplot(cars) + geom_point(aes(x=speed,y=dist))
+```
+
+In the chunk above:
+
+-   We've created an object using `ggplot()` and given it it's input as `cars` data set
+-   We specified our x and y values be plotted as points using `geom_point` argument
+-   Using `aes` that stands for aesthetics, we map speed to x-axis and dist to y- axis for the `geom_point` part
+    -   Aesthetics are used to map from data to graphics
+-   In the event we want `aes` to be shared with different functions, we set it in the `ggplot()`
+    -   By doing so we don't have to specify it for all functions we want with the same `aes`
+
+```{r}
+ggplot(cars,aes(x=speed,y=dist)) + geom_point()
+```
+
+-   
+
+    -   is used to string together a series of `cmds` used to modify the `ggplot()`object
+    -   In our codes above it's used to combine `ggplot()` and `geom_point()`
+    -   `+` is the `%>%` version of `ggplot2` package
+
+-   since `ggplot()` takes a data frame as it's 1^st^ argument, we use `%>%` when plotting
+
+```{r}
+cars %>% ggplot(aes(x=speed,y=dist)) + geom_point()
+```
+
+For the `iris` data set the code chunk below is used to plot it's scatter plot
+
+```{r}
+iris %>% qplot(Petal.Width,Petal.Length,
+              color=Species,data=.)
+```
+
+The equivalent using geometries is
+
+```{r}
+iris %>% ggplot +
+  geom_point(aes(x=Petal.Width,y=Petal.Length,
+             color=Species))
+```
+
+We can have the aesthetics inside the `ggplot()`
+
+```{r}
+iris %>% ggplot(aes(x=Petal.Width,y=Petal.Length,color=Species)) +
+  geom_point()
+```
+
+**NB:** in the chunks above, we have the argument `color` inside `aes` as it is dependent on another variable.\
+In the event we want a specific color, we'll have the argument outside `aes`
+
+```{r}
+iris %>% ggplot +
+  geom_point(aes(x=Petal.Width,y=Petal.Length),
+             color="red")
+```
+
+```{r}
+iris %>% ggplot(aes(x=Petal.Width,y=Petal.Length)) +
+  geom_point(color="red")
+```
+
+**`qplots()` for histogram and density plots**
+
+```{r}
+cars %>% qplot(speed,data=.,bins=10)
+cars %>% qplot(speed,data=.,geom="density")
+```
+
+**`ggplots()` for histogram and density plots**
+
+```{r}
+cars %>% ggplot(aes(x=speed)) +
+ geom_histogram(bins=10)
+```
+
+```{r}
+cars %>% ggplot(aes(x=speed)) +
+   geom_density()
+```
+
+**combined plot for histogram and density using `ggplot()`**
+
+```{r,warning=F}
+cars %>% ggplot(aes(x=speed,y=..count..)) +
+  geom_histogram(bins=10) +
+  geom_density()
+```
+
+By setting `y=..count..` you tell both geometries to use counts as the y-axis\
+To get densities instead you use `y=..density..`
+
+```{r}
+cars %>% ggplot(aes(x=speed,y=..density..)) +
+  geom_histogram(bins=10) +
+  geom_density()
+
+```
+
+**Fitting a line of best fit**
+
+```{r}
+cars %>% ggplot(aes(x=speed,y=dist)) +   geom_point() + geom_smooth(method = "lm")
+
+```
+
+-   The `geom_smooth()` is used to plot a smooth curve(linear curve)
+
+-   You define the type of smooth curve in the `method` argument
+
+-   Other common methods include:
+
+```         
+-    "loess" for local regression (which is the default method),(plots a non linear curve)
+
+-    "gam" for generalized additive models, and
+
+-    "glm" for generalized linear models
+```
+
+### Using at-least one geometry in a single plot
+
+-   Just like in the chunks above, you can have more than one geometry in the plot as long as they are separated by `+`
+
+-   You can also specify if you want different `aes` for each geometry function or a similar for each function as shown above
+
+-   Some examples include:
+
+```{r}
+longley %>% ggplot(aes(x=Year)) +   geom_line(aes(y=Unemployed)) +   geom_line(aes(y=Armed.Forces),color="blue")
+
+```
+
+-   Since our variables share the x-axis/x-value we define `aes(x=Year)` in the `ggplot()` object
+
+-   We define different y-values in their respective geometry functions as they are not same
+
+-   **NB:** The y-axis is adjusted to fit both lines thus no need of `ylim=range()`- the y-limit function
+
+```{r}
+longley %>% ggplot(aes(x=Year)) +   geom_point(aes(y=Unemployed)) +   geom_point(aes(y=Armed.Forces),col="blue") +   geom_line(aes(y=Unemployed)) +   geom_line(aes(y=Armed.Forces),col="blue")
+
+```
+
+Plotting 2 variables with different aesthetics is a trick that mostly works but isn't that efficient
+
+In the chunk above we are representing our variables `Unemployed` and `Armed.Forces as 2 different measures`
+
+Thus it's impossible to split the plot as 2 sub-plots when we need
+
+To be able to represent the variables as 1 measure and thus able to split them into subsets , we'll employ the `gather()`
+
+The $gather()$ makes wide data to be long data.
+
+It has the arguments $key$ that stores the variables of interest and $value$ which stores the value of the variables
+
+```{r}
+library(tidyr)
+```
+
+```{r}
+longley %>% 
+  gather(key,value,Unemployed,Armed.Forces) %>% 
+  ggplot(aes(x=Year,y=value,color=key)) +
+  geom_line() +
+  geom_point()
+```
+
+It is now possible to split our plot into 2 sub plots using `facet`
+
+```{r}
+longley %>% 
+  gather(key,value,Unemployed,Armed.Forces) %>% 
+  ggplot(aes(x=Year,y=value,col=key)) +
+  geom_line() +
+  facet_grid(key~.)
+```
+
+```{r}
+longley %>% gather(Key,Attribute,Unemployed,Armed.Forces) %>% 
+  ggplot(aes(x=Year,y=Attribute,col=Key))+
+  geom_line()+
+  geom_point()+
+  facet_grid(Key~.)
+```
+
+## Facets
+
+They are used to split plots into subplots
+
+Facets can be specified using the functions `facet_grid()` and `facet_wrap()`
+
+`facet_grid()`
+
+:   -   creates subplots based on two categorical variables
+
+    -   **syntax:** rows\~columns
+
+    -   By default `ggplot` puts all values in the same axis when creating facets using `facet_grid`
+
+    -   facets within a column will always have same x-axis whilst those within a row will have same y-axis
+
+    -   Sharing same axis by different variables isn't that effective as they have they have different ranges. R will not consider this.
+
+    -   To offset this, we use the `scale` argument to give each variable its range
+
+    <div>
+
+    ```{r}
+    iris %>% 
+      gather(Measurement,value,-Species) %>% 
+      ggplot(aes(x=Species,y=value)) +
+      geom_boxplot() +
+      facet_grid(Measurement~.)
+    ```
+
+    </div>
+
+    `scale` gives each variable its range
+
+    `scale="free_y"` is used to specify that scale of the y- axis in each facet
+
+    <div>
+
+    ```{r}
+    iris %>% gather(Measurement,value,!Species) %>% 
+      ggplot(aes(x=Species,y=value,col=Measurement)) +
+      geom_boxplot() +
+      facet_grid(Measurement~.,scale="free_x")
+
+    ```
+
+    </div>
+
+    -   By default all `facets` have same size. You can modify this using the space variable.
+
+    -   Its useful for categorical values if one facet has many levels than the others
+
+    -   Labels used are taken from factors in the variables used to construct the facet
+
+    -   In the event you want to modify labels, the `labeller` argument of `facet_grid()` is used
+
+    -   The `labeller` takes a function (ie; `labeller()`) as an argument responsible for making labels
+
+    -   Let's modify the iris label above to have white space as delimiter instead of periods
+
+    <div>
+
+    ```{r}
+    label_map<-c(Petal.Width="Petal width",
+                 Petal.Length="Petal Length",
+                 Sepal.Width="Sepal Width",
+                 Sepal.Length="Sepal Length")
+    iris %>% gather(Measurement,value,!Species) %>% 
+      ggplot(aes(x=Species,y=value,col=Measurement)) +
+      geom_boxplot() +
+      facet_grid(Measurement~.,
+                 scale="free_y",
+                 labeller = labeller(Measurement=label_map ))
+
+    ```
+
+    </div>
+
+`facet_wrap()`
+
+:   -   creates subplots based on one categorical variables
+
+    -   **syntax** : \~variables
+
+# Scaling {#sec-scaling}
+
+Scaling refers to the process of adjusting the range of values of a data set to make them more suitable for analysis
+
+scales tell `ggplot` how dimensions should be visualized
+
+1.  **Naming the x and y axis**
+
+```{r}
+cars %>% 
+  ggplot(aes(x=speed,y=dist)) +
+  geom_point() +
+  geom_smooth(method='lm') +
+  scale_x_continuous("Speed") +
+  scale_y_continuous("Stopping distance")
+```
+
+`scale_x/y_continuous` are used to control axis graphics for continuous data
+
+2.  **Setting break points**
+
+-   We can set break point to be shown if we wanted tick marks for each year of the `longley` data set
+
+```{r}
+longley %>% gather(key,value,Unemployed,Armed.Forces) %>% 
+  ggplot(aes(x=Year,y=value)) +
+  geom_line() +
+  scale_x_continuous(breaks =1947:1962) +
+  facet_grid(key~.)
+```
+
+3.  **Reversing**
+
+To reverse and axis we use the `scale_x\y_reverse()` function
+
+For instance in the `cars` data set you can show speed of cars is decreasing instead of increasing
+
+```{r}
+cars %>% ggplot(aes(x=speed,y=dist)) +
+  geom_point() + geom_smooth(method="lm") +
+  scale_x_reverse("speed") +
+  scale_y_continuous("Stopping distance")
+```
+
+4.  **Naming labels**
+
+In the event you're dealing with discrete data, `scale_x/y_discrete()` is used to define dimensions of our plots
+
+**NB:** A factor is considered to be discrete data, so when used in an axis we employ `scale_x/y_discrete` to define our dimension.
+
+```{r}
+iris %>% ggplot(aes(x=Species,y=Petal.Length)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1,height = 0.1)
+```
+
+`geom_jitter()`has been used to show individual data points in our box plot
+
+In modification of the x-axis, we will use the `scale_x_discrete()`
+
+```{r}
+iris %>% 
+  ggplot(aes(x=Species,y=Petal.Length))+
+  geom_boxplot() +geom_jitter(width=0.1,height=0.1) +
+  scale_x_discrete(labels=c("setosa"="Setosa",
+                            "versicolor"="Versicolor",
+                            "virginica"="V irginica"))
+```
+
+5.  **Coloring plots**
+
+The argument `col` or `color` is used to color the edges of objects in a plot whilst the argument `fill` is used to color this objects
+
+```{r}
+iris %>% gather(Measurement,value,!Species) %>% 
+  ggplot(aes(x=Species,y=value,color=Species)) +
+  geom_boxplot() +
+  facet_grid(Measurement~.,scale="free_y") +
+  scale_x_discrete(labels=c("setosa"="Setosa",
+                            "versicolor"="Versicolor",
+                            "virginica"="Virginicia"))
+```
+
+The code is used to color the outlines
+
+The next code will be used to color the inside the object
+
+```{r}
+iris %>% 
+  gather(Measurement,value,!Species) %>% 
+  ggplot(aes(x=Species,y=value,fill=Species)) +
+  geom_boxplot() +
+  facet_grid(Measurement~.,
+             scale = "free_y",
+             labeller = labeller(Measurement=label_map
+                                 ))
+```
+
+**Modifying colors**
+
+The `scale_fill_manual()` function can be used to modify colors
+
+```{r}
+iris %>% gather(Measurement,value,!Species) %>% 
+  ggplot(aes(x=Species,y=value,fill=Species)) +
+  geom_boxplot() +
+  scale_fill_manual(values=c("red","green","blue")) +
+  facet_grid(Measurement~.,space="free_y",
+             labeller = labeller(Measurement=label_map))
+```
+
+Setting colors can be tricky especially if you don't know the right colors to set to suite color blind people
+
+This can be offset using the `scale_fill_brewer()` that let's you work with color palettes.
+
+A color palette is a combination of colors choose to work together
+
+```{r}
+iris %>% gather(Measurement,value,!Species) %>% 
+  ggplot(aes(x=Species,y=value,fill=Species)) +
+  geom_boxplot() +
+  scale_fill_brewer(palette="Greens") +
+  facet_grid(Measurement~.,scale="free_y")
+```
+
+## Theme and other Graphics Transformation
+
+Themes are used to define how the final plot will look like
+
+To define how final plots look like, we have to modify our themes
+
+The default theme is given by the function
+
+```{r}
+theme_set(theme_bw())
+```
+
+`theme_bw()` sets up the looks of figure
+
+`coord_flip()` is used to flip(interchange) the x and y-axis rather than changing it from the aesthetics
+
+1.  Code with original x and y axis
+
+```{r}
+iris %>% gather(Measurement,value,!Species) %>% 
+  ggplot(aes(x=Species,y=value,fill=Species)) +
+  geom_boxplot()+
+  scale_x_discrete(labels=c("setosa"="Setosa",
+                            "versicolor"="Versicolor",
+                            "virginicia"="Virginicia")) +
+  scale_fill_brewer(palette = "Greens")+
+  facet_grid(Measurement~.,switch = "y",
+             labeller = labeller(Measurement=label_map))
+```
+
+2.  Code with x and y axis interchanged using aesthetics
+
+```{r}
+iris %>% gather(Measurement,value,!Species) %>% 
+  ggplot(aes(x=value,y=Species,fill=Species)) +
+  geom_boxplot()+
+  scale_x_discrete(labels=c("setosa"="Setosa",
+                            "versicolor"="Versicolor",
+                            "virginica"="Virginica")) +
+  scale_fill_brewer(palette="Greens") +
+  facet_grid(Measurement~.,switch="y",
+             labeller=labeller(Measurement=label_map))
+```
+
+```{r}
+iris %>% gather(Measurement,value,!Species) %>% 
+  ggplot(aes(x=Species,y=value,fill=Species)) +
+  geom_boxplot() +
+  scale_x_discrete(labels=c("setosa"="Setosa",
+                   "versicolor"="Versicolor",
+                   "virginica"="Virginica")) +
+  scale_fill_brewer(palette="Greens") +
+  facet_grid(Measurement~.,switch="y",
+             labeller=labeller(Measurement=label_map))+
+  coord_flip()
+```
+
+While `scale="free_y"` is used to specify the scale of the y-axis of each facet, `switch=y` is used to specify that scales shouldn't be shared on the y-axis
+
+When `scale="free_y'` is used together with `coord_flip="y"` only the 1^st^ facet will have it's scale and the rest will share a scale
+
+We want to get rid of the background in the labels and also move the legend to the top
+
+The functions `` theme(strip.background=element_blank() and `theme(legend.position="top ``
+
+```{r}
+iris %>% gather(Measurement,value,!Species) %>% 
+  ggplot(aes(x=Species,y=value,fill=Species)) +
+  geom_boxplot()+
+  scale_x_discrete(labels=c("setosa"="Setosa",
+                            "versicolor"="Versicolor",
+                            "virginica"="Virginica")) +
+  scale_fill_brewer(palette = "Greens") +
+  facet_grid(Measurement~.,
+             switch="y",
+             labeller=labeller(Measurement=label_map))+
+  coord_flip()+
+  theme(strip.background=element_blank())+
+  theme(legend.position="top")
+
+```
+
+### Figures with multiple plots
+
+`ggplot` does not directly support combining multiple plots
+
+In combination with the underlying graphics system `grid` thus can be achieved
+
+however `grid` has many low-level-tools for modification of graphics
+
+The `gridExtra` package can be used to combine plots for high-level-functions
+
+To combine plots:
+
+1.  **Make individual plots**
+
+```{r}
+petal<-iris %>% ggplot()+
+  geom_point(aes(x=Petal.Width,y=Petal.Length,color=Species))+
+  theme(legend.position="none")
+sepal<-iris %>% ggplot(aes(x=Sepal.Width,y=Sepal.Length,color=Species))+
+  geom_point()+
+  theme(legend.position = "none")
+petal
+sepal
+```
+
+2.  **Install and Load the `gridExtra`** **packages**
+
+```{r,eval=F,warning=F}
+install.packages("gridExtra")
+```
+
+```{r,warning=F}
+library("gridExtra")
+
+```
+
+3.  Us ethe `grid.arrange()`to create a grid of plots in the plots we've created
+
+```{r}
+grid.arrange(petal,sepal,ncol=2)
+```
+
+Another package that can be used to combine plots is the `cowplot` package
+
+It redefines the default theme of the `ggplot` package
+
+```{r,eval=F,warning=F}
+install.packages("cowplot")
+```
+
+```{r,warning=F}
+library("cowplot")
+
+
+```
+
+```{r}
+plot_grid(petal,sepal,labels=c("A","B"))
+```

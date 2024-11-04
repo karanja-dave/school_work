@@ -1,0 +1,58 @@
+summ <- function(x) {
+  # Initialize an empty data frame to store results
+  summarx <- data.frame()
+  
+  # Get the number of columns
+  num_cols <- ncol(x)
+  
+  # Loop through all columns
+  for (i in 1:num_cols) {
+    # Calculate summary statistics for the current column
+    mean_val <- mean(x[[i]])
+    var_val <- var(x[[i]])
+    sd_val <- sd(x[[i]])
+    
+    # Initialize correlation value
+    corr_val <- NA
+    
+    # Check if there is a subsequent column for correlation
+    if (i < num_cols) {
+      corr_val <- cor(x[[i]], x[[i + 1]])
+    }
+    
+    # Store the results in a data frame
+    summary <- data.frame(
+      mean = mean_val,
+      var = var_val,
+      sd = sd_val,
+      correlation = corr_val
+    )
+    
+    # Add a row name for clarity (e.g., column name)
+    row.names(summary) <- colnames(x)[i]
+    
+    # Bind the summary row to the results data frame
+    summarx <- rbind(summarx, summary)
+  }
+  
+  return(summarx)
+}
+
+# Load the 'anscombe' dataset
+data(anscombe)
+
+# Calculate descriptive statistics and correlations
+stats <- summ(anscombe)
+
+# Print the results
+print(stats)
+
+
+
+
+x=matrix(1:9,ncol=3)
+y=matrix(1:9,ncol=3)
+x
+y
+x*y
+x%*%y

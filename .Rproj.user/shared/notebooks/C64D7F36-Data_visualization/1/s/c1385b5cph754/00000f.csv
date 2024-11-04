@@ -1,0 +1,3 @@
+"0","     cars %$% plot(speed,dist,"
+"0","                  main=""Cars data"","
+"0","                  xlab=""Speed"",ylab=""Stopping distance"") "

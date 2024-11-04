@@ -1,0 +1,84 @@
+Logistic Regression In R
+
+Business Problem
+
+Predicting the probability of bank loan defaulting
+
+Business Solution
+
+Build a logistic model that will be used to predict defaulting of loans
+
+Performing Data Exploration
+
+Before we start, let's interact with the data to learn, understand it and know what we are working with. To be able to do this we perform Exploratory Data Analysis EDA on the data. This will help us know the number of variables and observations in the data set. It will also allow us to look at trends, patterns, summary outliers and missing values in the data. Also we will get to know of the data type of each variable
+
+{r}
+# load data in R
+data1<-read.csv("loan_default.csv",header=T,sep=",")
+
+#describe structure of data
+str(data1)
+
+From the structure of the data, we see that it has 16 variables with 1000 observations. We also see that 13 variables are integers while 3 are characters. Our desire is to have the 3 (Gender, Marital_status, Emp_status) variables as ordered factors. To do this, we'll perform some data manipulation on the data.
+
+{r}
+#data manipulation on Gender
+data1$Gender<-factor(data1$Gender)
+#data manipulation on Maritial_status
+data1$Marital_status<-factor(data1$Marital_status)
+#data manipulation on Emp_status
+data1$Emp_status<-factor(data1$Emp_status)
+str(data1)
+
+
+{r,eval=F}
+#display top 6 rows to see what data lookslike
+head(data1)
+#display bottom 6 row
+tail(data1)
+#display column names
+names(data1)
+#output descriptive statistics
+summary(data1)
+#Check for missing  values
+is.na(data1)
+
+Missing values reduces the statistical power of a study and can provide biased estimates. To make the model efficient and effective we impute missing values using imputation techniques such as mean, K-nearest neighbor, fuzzy K-means, e.t.c. Imputing missing values implies that we replace missing values with estimated values based on other available information.
+
+Model Building and interpretation of Full Data
+
+We are going to use the whole data for model building instead of randomly splitting it into train and test data to see the difference of the two approaches when building the model.
+
+{r}
+#building a logistic regression model using glm on full data
+fullmodel<-glm(Default~.,data=data1,family = binomial(link=logit))
+summary(fullmodel)
+
+The Null deviance is used to measure fit of model with only the intercept. It's degrees of freedom is n-1 where n is the total number of observations. The Residual deviance is used to measure the fit of the model with all the parameters. It's degrees of freedom are n-k where n is the total number of observations and k is the total number of predictors. The AIC (Alkaile information criteria balances the model fit and model complexity). These 3 merits can be used to compare existing model with other potential models. The smaller they are the better or fit the model is.
+
+The Number of Fisher Scoring Iteration refers to the number of iterations carried out  before the Fisher scoring algorithm converges. The Fisher Scoring algorithms uses Maximum likelihood estimation to get the estimates of parameters. Each iteration involves recalculating of the estimates until the model converges.
+
+At $\alpha=0.05$ let's remove the variable that do not contribute significantly to the prediction of the target variable. This is referred to as model reduction. The prediction variable that are insignificant are those whose p-value is greater than 0.05
+
+The reduced model will be 
+
+{r}
+#reduced Model
+fullmodel2<-glm(Default~Checking_amount+Term+Credit_score+Saving_amount+Age,family=binomial(link=logit),data=data1)
+summary(fullmodel2)
+
+Increase in one unit of $Checking_amount$ reduces probability of loan default by $-0.0048\dots$ whereas increastein one unit of $Term$ increase the probability of loan default by $0.1748\dots$ ,e.t.c
+
+Now lets break the data into 2 samples one for the training the model and the other for testing the model. We'll use the ratio 70:30.
+
+$\implies$ 70% of the data is used to train/build the model whilst 30% is used to test the fit of the model
+
+{r}
+#get train data
+train_obs<-floor(0.7*nrow(data1))
+#set seed inorder to reproduce the sample
+set.seed(2)
+train_index<-sample(seq_along(nrow(data1)),size=train_obs)
+
+
+

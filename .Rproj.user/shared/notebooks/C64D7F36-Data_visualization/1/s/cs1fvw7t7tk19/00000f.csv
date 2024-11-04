@@ -1,0 +1,6 @@
+"0","cars %>% ggplot(aes(x=speed,y=dist)) +"
+"0","  geom_point() + geom_smooth(method=""lm"") +"
+"0","  scale_x_reverse(""speed"") +"
+"0","  scale_y_continuous(""Stopping distance"")"
+"1","[1m[22m`geom_smooth()` using formula = 'y ~ x'
+"

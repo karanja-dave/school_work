@@ -1,0 +1,162 @@
+---
+title: "Stochastic Processes Assignment 1"
+output:
+  pdf_document:
+    toc: true
+  html_document:
+    toc: true
+    toc_float: true
+---
+
++---------------------+-----------------------+
+| Names               | RegNo                 |
++=====================+=======================+
+| 1.  David.W.Karanja | -   S030-01-1925/2022 |
++---------------------+-----------------------+
+| 2.  Kenneth Munene  | -   S030-01-1916/2022 |
++---------------------+-----------------------+
+| 3.  Lucy wanjiru    | -   S030-01-1967/2022 |
++---------------------+-----------------------+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=F,message=F)
+```
+
+```{r,echo=F}
+library("markovchain")
+library("ggplot2")
+library("tidyr")
+library("magrittr")
+```
+
+# Question 1:
+
+## solution (i)
+
+```{r}
+#get markovchain object
+(transitions_markov<-new("markovchain",states=c("H","S","D"),transitionMatrix=matrix(c(0.98,0.019,0.001,0.2,0.75,0.05,0,0,1),byrow = T,nrow = 3),name="transitions_markov"))
+```
+
+## solution (ii)
+
+```{r}
+#create a 2 step TPM
+(tpm_2<-(transitions_markov^2))
+cat("The probability of being sick in two weeks given life is healthy now is:",tpm_2[1,2])
+```
+
+## solution (iii)
+
+```{r}
+# create a 52 step transition matrix
+(tpm_52<-transitions_markov^52)
+cat("The probability of being sick in the next 52 weeks given life is healthy now is:",tpm_52[1,2])
+
+```
+
+## solution (iv)
+
+```{r}
+cat("The probability of remaining healthy the whole year given life is healthy now is:",tpm_52[1,1])
+```
+
+# Question 2
+
+## Solution (i)
+
+```{r}
+x_t<-function(p,q,r){
+  if(p<0|p>1|q<0|q>1|r<0|r>1){
+    stop("Entries should be probabilities")
+  }
+  #define tpm
+  x<-matrix(c(p,1-p,0,q,0,1-q,0,r,1-r),byrow = T,nrow = 3)
+  ifelse(apply(x,1,sum)!=1,stop("Row sums should be 1"),NA)
+  
+  #create markovchain object
+  m_c<-new("markovchain",transitionMatrix=x,states=c("1","2","3"),name="xt")
+  return(m_c)
+}
+
+
+
+```
+
+## Solution (ii)
+
+```{r}
+# Define function to get statinary distribution
+stat_dist <- function(q) {
+  x<-matrix(c(0.75,0.25,0,q,0,1-q,0,0.25,0.75),nrow=3,byrow = TRUE)
+  
+  mc <- new("markovchain", transitionMatrix = x, name = "xt")
+  statinary <- steadyStates(mc)
+  return(as.vector(statinary))
+}
+
+# Generate values of q 
+q_values <- seq(0.1, 0.9, by = 0.1)
+
+# Calculate stationary distributions
+stationary_dist<-sapply(q_values, stat_dist)
+
+stationary_dist
+```
+
+## Solution (iii)
+
+```{r}
+#generate a data frame with plotting values
+data<-data.frame(q = q_values,State1=stationary_dist[1,],State2 =stationary_dist[2,],State3 = stationary_dist[3,])
+# Plot
+data %>% ggplot(aes(x = q))+
+  geom_line(aes(y=State1,col="red")) +
+  geom_line(aes(y=State2,col="blue")) +
+  geom_line(aes(y=State3,col="green")) +
+  labs(x = "q", y = "Stationary Probability", color = "State") +
+  ggtitle("Stationary Distributions of Xt as a function of q") +
+  theme_minimal()
+
+
+```
+
+# Question 3:
+
+## Solution (i), (ii), (iii)
+
+```{r}
+#define state space for transition probability matrix
+state_space<-c("North","South","West")
+#define matrix for transition probabilty matrix
+(tpm<-matrix(c(.3,.3,.4,.4,.4,.2,.5,.3,.2),nrow = 3,byrow = T))
+
+(tpm_markov<-new("markovchain",states=state_space,transitionMatrix=tpm))
+```
+
+## Solution (iv)
+
+```{r}
+plot(tpm_markov)
+```
+
+## Solution (v)
+
+```{r}
+#2-step transition probability matrix
+(tpm_markov2<-(tpm_markov)^2)
+cat("The probability a driver being in the north zone after 2 trips given they are currently in the north zone is:",tpm_markov2[1,1])
+```
+
+```{r}
+#3-step tpm
+tpm_markov3<-(tpm_markov)^3
+cat("the prob that a driver currently in the North zone will still be there after 3 trips is ",tpm_markov3[1,1])
+
+```
+
+## Solution (vi)
+
+```{r}
+steadyStates(tpm_markov)
+```

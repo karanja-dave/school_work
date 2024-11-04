@@ -1,0 +1,5 @@
+"0","#create a simple linear model"
+"0","fit_model<-lm(y~x)"
+"0",""
+"0","#plotting fitted line"
+"0","abline(lm(fit_model))"

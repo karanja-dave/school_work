@@ -1,0 +1,761 @@
+---
+title: "Chapter 9- Advanced R Programming"
+output: html_document
+date: "2024-05-18"
+---
+
+[click here](http://adv-r.had.co.nz/) to open a book that talks more about advanced programming
+
+# Working with vectors and Vectorizing Functions
+
+-   Previously we've dealt with expressions on single values(Scalar)
+
+-   But R doesn't have scalar values and treats all expressions as vectors, be it single or many expressions
+
+-   This expressions can be referred to as vectorized expressions
+
+-   They perform element-wise operations on data structures
+
+-   Consider code below
+
+```{r}
+(x<-2/3)
+(y<-x**2)
+```
+
+-   Our expressions are working on single values
+
+```{r}
+is.vector(2)
+is.vector("a")
+```
+
+-   The chunk above proves that R takes all single expressions as vectors
+
+-   consider the chunk:
+
+```{r}
+(x<-1:4/3)
+(y<-x**2)
+```
+
+-   R works on vectors using 2 rules:
+
+    1.  Operations are done element-wise
+    2.  Vectors are repeated as needed (Recycling process)
+
+    **Element wise operations**
+
+-   The expression `x+y` implies creation of new vectors whose values are the element wise summation of vectors x and y
+
+```{r}
+x<-1:5
+y<-6:10
+x+y
+```
+
+-   This can also be written as :
+
+```{r}
+(z<-x+y)
+```
+
+-   Which can also be written as :
+
+```{r}
+z<-vector(length=length(x))
+for(i in seq_along(x)){
+  z[i]<-x[i]+y[i]
+}
+z
+```
+
+-   The chunk is a breakdown of what R simply does when performing element wise computation for vectors, in our case element wise summation
+
+-   This is the case for all arithmetic expressions and logical expressions involving `|` and `&`
+
+-   The same case also applies form most functions one calls
+
+```{r}
+sqrt((1:5)^2)
+sin(sqrt((1:5)^2))
+```
+
+**Recycling Process**
+
+-   It occurs when you have one vector that is longer than the other
+
+-   In such scenario, R repeats the shorter vector to make it of same length as the long one
+
+-   **NB:** Length of long vector should be divisible by length of shorter vector
+
+-   If this is not the case a warning is displayed but the recycling process is performed
+
+-   Once this is done R can perform operations on the vectors element-wise
+
+```{r}
+x<-1:10
+y<-1:2
+x+y
+```
+
+-   The table below shows the recycling process and the element wise performance
+
+|     |     |     |     |     |     |     |     |     |     |     |
+|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
+| x   | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   | 9   | 10  |
+| y   | 1   | 2   | 1   | 2   | 1   | 2   | 1   | 2   | 1   | 2   |
+| x+y | 2   | 4   | 4   | 6   | 6   | 8   | 8   | 10  | 10  | 12  |
+
+```{r}
+z<-1:3
+x+z
+```
+
+|     |     |     |     |     |     |     |     |     |     |     |
+|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
+| x   | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   | 9   | 10  |
+| z   | 1   | 2   | 3   | 1   | 2   | 3   | 1   | 2   | 3   | 1   |
+| x+z | 2   | 4   | 6   | 5   | 7   | 9   | 8   | 10  | 12  | 11  |
+
+**NB: *Always use vectorized expressions when dealing with vectors rather than writing loops for vectors as its much faster and less prone to errors***
+
+## If else
+
+-   Control structures are not vectorized, for instance if statements
+
+-   Thus One can't write vectorized expressions for them
+
+-   Check chunk below
+
+    ```{r,error=T}
+    x<-1:10
+    if(x%%2==0) 5 else 15
+
+    ```
+
+-   To counter the issue we use the `ifelse()` function
+
+```{r}
+x<1:10
+ifelse(x%%2==0,5,15)
+```
+
+## Vectorizing Functions
+
+-   User defined functions have to be created in a way they work on vectors
+
+-   That is, they take vectors as inputs and return vectors as output
+
+-   This enables them to be used in vectorized expressions just like inbuilt functions
+
+-   Consider the function below:
+
+```{r}
+f<-function(x,y){
+  sqrt(x^y)
+}
+f(1:6,2)
+f(1:6,2)
+```
+
+-   The `Vectorize()` is used when you want to coerce the use of vectorized expressions
+
+-   Consider function that maps names in a class to their roles
+
+```{r}
+role_table<-list(Thomas="Instructor",
+                 Henrick="Student",
+                 Kristian="Student",
+                 Randi="Student",
+                 Heidi="Student",
+                 Manfred="Student")
+map_to_role<-function(name) role_table[[name]]
+
+```
+
+-   The function works when we call only one name
+
+```{r}
+map_to_role("Thomas")
+map_to_role("Manfred")
+```
+
+-   It fails when we call the function with a vector/ when we call multiple names
+
+```{r,error=T}
+x<-c("Thomas","Henrick","Randi")
+map_to_role(x)
+```
+
+-   Thus the function does not work on vectors
+
+-   To make the function work on vectors, we use the `Vectorize()`function
+
+```{r}
+map_to_role<-Vectorize(map_to_role)
+map_to_role(x)
+```
+
+-   The function initially failed due to use of `[[]]`
+
+-   As previously stated `[[]]`are used to access the elements of the list directly
+
+-   `[]`are used to access the list that contains elements we are interested in thus making it possible to ask for multiple names
+
+```{r}
+role_table <- list("Thomas" = "Instructor",
+ "Henrik" = "Student",
+ "Kristian" = "Student",
+ "Randi" = "Student",
+ "Heidi" = "Student",
+ "Manfred" = "Student")
+map_to_role<- function(name) role_table[name]
+x<-c("Thomas","Henrik","Randi")
+map_to_role(x)
+```
+
+-   But the results will come as a list and not as a vector of named values.
+
+-   To offset it, we use the `unlist()`function that coerces lists to vectors
+
+```{r}
+map_to_role_2 <- function(names) unlist(role_table[names])
+x <- c("Thomas", "Henrik", "Randi")
+map_to_role_2(x)
+```
+
+**NB :** *When its not possible to write functions such that they take in vectors and output vectors we use `Vectorize()`*
+
+-   The `[[]]`is a shortcut for accessing elements in a list.
+
+-   It can also be used for recursive indexing
+
+```{r}
+x<-list(first=list(second="foo"),third="bar")
+x[[c("first","second")]]
+```
+
+-   This can be written as:
+
+```{r}
+x[["first"]][["second"]]
+x$first$second
+```
+
+# The apply Family
+
+-   Vectorizing functions makes it easy to implicitly(indirectly) work with vectors, taking a vector as input and returning it as output
+
+-   Not all functions are considered vectorized functions.
+
+-   some (Ie; `sum()`,`mean()`) take sequence of vectors and return a single value
+
+-   It requires explicit handling of sequence input in order to write such functions
+
+-   R provides various ways to operate on sequences and call functions on them
+
+-   Common functions used in R for such purposes include `apply` in their names
+
+-   The apply functions are used to operate across data of data structures efficiently
+
+## `apply`
+
+-   Best explained using a matrix
+
+-   `apply()` let's you specify if operation should be done on a row or column
+
+-   It takes at leas t3 arguments:
+
+    1.  Data from a data structure
+    2.  Dimensions; 1 specifies row, 2 column and c(1,2) both
+    3.  Function to be applied on data
+
+```{r}
+m <- matrix(1:9, nrow = 3, byrow = TRUE)
+print(m)
+#Apply sum function to each row
+row_sums <- apply(m, 1, sum)
+print(row_sums)
+# Apply sum function to each column
+col_sums <- apply(m, 2, sum)
+print(col_sums)
+```
+
+-   **Apply paste function for each row**
+
+```{r}
+m<-matrix(1:6,nrow=2,byrow=T);m
+apply(m,1,function(x) paste(x,collapse = ":"))
+```
+
+```         
+The collapse argument is used in functions for concatenating such as paste()
+
+It allows one to specify the delimiter that separates concatenated values
+
+We apply the paste function to our rows thus values of each row are concatenated as individual expressions and the collapse argument specifies ":" as the separator of our concatenated values
+```
+
+```{r,warning=F,echo=F}
+library("dplyr")
+```
+
+-   **Apply paste function for each column**
+
+```{r}
+m %>% apply(2,function(x) paste(x,collapse = ":"))
+
+```
+
+-   **Apply paste function for each row and column**
+
+```{r}
+m %>% apply(c(1,2),function(x) paste(x,collapse=":"))
+```
+
+-   The output of the chunks is 2-dimensional as we are marginalizing over two dimensions(rows and columns)
+
+-   Consider a function that takes a vector and duplicates it by concatenating it with itself
+
+-   If we apply it to our row or column we get an output for each row/ column that is a 2 dimensional
+
+```{r}
+m %>% apply(1,function(x) c(x,x))
+```
+
+-   When our function is applied to the rows of our matrix the result is a 2 column matrix
+
+-   The 1^st^ columns contains the 1st row of the original column and its duplicate
+
+-   The 2^nd^ column contains the 2nd row of the original column and its duplicate
+
+-   Reason for this arrangement is because of the default column wise data input criteria of R
+
+```{r}
+m %>% apply(2,function(x) c(x,x))
+```
+
+-   When the function is applied to the matrix it results to a matrix with 3 columns
+
+-   The 1^st^ column has the 1st column of the original matrix and its duplicate
+
+-   The 2^nd^ column has the 2nd column of original matrix and its duplicate
+
+-   The 3^rd^ column has the 3rd column of original matrix and its duplicate
+
+-   Reason is same as above's
+
+```{r}
+m %>% apply(c(1,2),function(x)c(x,x))
+```
+
+## Rudia explanation
+
+```{r}
+x<-m %>% apply(c(1,2),function(x)c(x,x))
+k<-dim(x)[3]
+n<-dim(x)[2]
+for(i in 1:n){
+  for(j in 1:k){
+    print(x[,i,j])
+  }
+}
+```
+
+-   In the event the user defined function takes additional arguments that are not in the data, you can define those arguments in the `apply()` function
+
+```{r,error=T}
+sumpow<-function(x,n) sum(x)**n
+apply(m,1,sumpow)
+
+```
+
+-   The function `sumpow()`is not evaluated as the argument `n` has no value
+
+-   This is offset by passing the value of `n` as an argument in the `apply()`function
+
+```{r}
+sumpow<-function(x,n) sum(x)**n
+apply(m,1,sumpow,2)
+```
+
+-   For readability, the chunk can be written as
+
+```{r}
+apply(m,1,sumpow,n=2)
+```
+
+## `lapply`
+
+-   It's used to map a function to a list
+
+-   It takes a list as input and applies a specified function to each element of each list in the list and outputs a list of the same length
+
+```{r}
+(l<-list(1,2,3))
+lapply(l,function(x) x^2)
+```
+
+-   If elements of a list are named the names are preserved for the output vector
+
+```{r}
+(l<-list(a=1,b=2,c=3))
+lapply(l,function(x)x^2)
+```
+
+-   If you it a vector as input, it returns a list as output
+
+```{r}
+lapply(1:3,function(x)x^2)
+```
+
+-   If elements of the list are more complex than a single number, the function is still applied to the element of each list
+
+```{r}
+k<-list(a=1:3,b=4:6)
+lapply(k,function(x)x^2)
+```
+
+-   Can also be written as:
+
+```{r}
+lapply(list(a=1:3,b=4:6),function(x)x^2)
+```
+
+## `sapply` and `vapply`
+
+-   `sapply()` is used to map functions to each element of a vector
+
+-   If given a list as input, it try to guess the output to return,(often a vector)
+
+-   It will return a list when it fails to figure out the output you want
+
+```{r}
+sapply(1:3, function(x)x^2)
+sapply(k, function(x)x**2)
+```
+
+-   `vapply()` operates as `sapply()` but has additional parameters to specify the output you want thus no guessing is done
+
+-   The parameter is a value of the type of output you want
+
+```{r}
+vapply(1:3,function(x)x^2,3)
+```
+
+# Advanced Functions
+
+## Special names
+
+-   Special names on functions are used when, the name of the variable holding the user defined function is not accepted by R as a variable.
+
+-   For instance you can't use the name of an inbuilt function as the name of a user defined function
+
+-   One can also not use infix operators (used to evaluate values Ie; +,-,\< as functions names
+
+-   To offset this, back-ticks are used
+
+```{r,error=T}
+if <-function(x)x^2
+if(2)
+```
+
+```{r}
+`if`<-function(x)x^2
+`if`(2)
+```
+
+-   Using infix operators as normal function calls
+
+```{r}
+2+2 #infix function
+`+`(2,2) #prefix operator
+
+4:6*3-1 #infix operator
+`-`(`*`(4:6,3),1) #prefix operator
+```
+
+-   Using function as infix operator
+
+```{r,error=T}
+`%or die%`<-function(test,msg) {
+  if (!test) {
+    stop(msg)
+  }
+}
+x<-5
+(x!=0)%or die%("x should not be zero")
+x<-0
+(x!=0) %or die% "x should not be zero"
+```
+
+## Infix operators
+
+-   In R any variable that starts and ends with `% is considered and infix operator`
+
+-   Inbuilt infix operators without this syntax include `+`,`*`,`/`,`-` e.t.c
+
+-   Inbuilt operator with this syntax is the `%>%` of the `dplyr` package the pipe operator
+
+```{r}
+`%per%`<-function(prop,total) val= (prop/total)*100
+(10%per%20) #infix operator function
+(`%per%`(10,20)) #prefix operator
+
+```
+
+-   The expression on the left is the 1st argument of our infix operator function
+
+```{r,error=T}
+`%div%`<-function(a,b){
+  if(a%%b==0) {return(TRUE)
+}else return(FALSE)
+}
+20%div%10
+`%div%`(20,10   )
+```
+
+## Replacement Functions
+
+-   They are functions that 'pretend to modify variables'
+
+-   For instance the `names()` used to name values of variables
+
+```{r}
+v<-1:4
+names(v)<-c('a','b','c','d');v
+```
+
+-   R realizes you are assigning to a function call and looks for a function named `names<-`
+
+-   It calls the function with the vector `v` and the vector of names
+
+-   The result of the function call gets assigned to the variable `v`
+
+-   This can also be expressed as
+
+```{r}
+v<-`names<-`(v,c('a','b','c','d'));v
+```
+
+-   Replacement functions are generally used to modify various attributes of an object
+
+-   A function is referred to as a replacement function if its name has the suffix `<-`
+
+-   A user defined replacement functions that performs the same as the `names()` function
+
+```{r}
+`foo<-`<-function(x,value){
+  x$foo<-value
+  x
+}
+`bar<-`<-function(x,value){
+  x$bar<-value
+  x
+}
+x<-c(foo=1,bar=2);x # a vector object
+x<-list(foo=1,bar=2);x # a list object
+x$foo #access the element in the list 'foo'
+foo(x)<-3
+x$foo
+x$bar
+bar(x)<-3
+```
+
+**Explanation of chunk above:**
+
+-   We declare a replacement function `foo()` and `bar()`
+
+-   Inside body of functions we use string/character indexing to declare a value of x for the variables `foo` and `bar`
+
+-   The 2 functions each have 2 arguments:
+
+    -   x, which is the object to create
+
+    -   value, which is the element of the created object
+
+-   We've defined our object x as a list
+
+-   Our replacement function `foo(x)` is used to change the value in the list `foo` from 1 to 3
+
+-   Same applies for our function `bar(x)`
+
+-   This 2 replacement functions can also be called as:
+
+```{r}
+x<-`foo<-`<-3
+x<-`bar<-`<-3
+
+```
+
+**RULES WHEN DECLARING REPLACEMENT FUNCTIONS**
+
+1.  The parameter `value` should by default be named value. Usage of another variable names brings an error
+
+```{r,error=T}
+`foo<-`<-function(x,val){
+  x$foo<-val
+  x
+}
+x<-list(foo=1,bar=2)
+foo(x)<-3
+```
+
+2.  You can give the object variable any name of your liking
+
+```{r}
+`foo<-`<-function(y,value){
+  y$foo<-value
+  y
+}
+x<-list(foo=1,bar=2)
+x$foo
+```
+
+3.  The `value` parameter should always be last if there are more parameters in the function
+
+```{r}
+`modify<-`<-function(x,var,value){
+  x[var]<-value
+  x
+}
+x<-list(foo=1,bar=2)
+modify(x,"foo")<-3
+modify(x,"bar")<-4
+x
+```
+
+# Functional Programming
+
+## Anonymous functions
+
+-   They are functions that are declared but not assigned any variable
+
+-   Instead of having a function as:
+
+```{r}
+square<-function(x)x^2
+```
+
+-   You can have it as :
+
+```{r}
+function(x)x^2
+```
+
+-   Anonymous functions are used when you want:
+
+1.  To use a one-off function that you don't need to give a name
+2.  To create closure
+
+-   Both cases are used when a function is used as an argument of another function or when returned from another function
+
+**Case 1**
+
+Compute sum of squares over row of a matrix using `apply()` function
+
+```{r}
+# without anonymous function
+m<-matrix(1:6,nrow=3);m
+sum_of_squares<-function(x)sum(x^2)
+apply(m,1,sum_of_squares)
+```
+
+```{r}
+# with anonymous function
+apply(m,1,function(x)sum(x^2))
+```
+
+-   We can manipulate the power operator to square rows before finding the sum
+
+```{r}
+apply(m^2,1,sum)
+```
+
+**Case 2**
+
+-   Using anonymous functions to create closures to write a function that returns a function
+
+```{r}
+#Without anonymous function
+f<-function(x){
+  g<-function(y) x+y
+  g
+}
+```
+
+```{r}
+#with anonymous function
+f<-function(x) function(y) x+y
+```
+
+## Functions Taking Functions as Arguments
+
+-   The apply family best describes functions that takes other functions as its argument
+
+-   Let's create a function that works like the `s/vapply()` but only takes inputs that satisfy a certain predicate/condition
+
+```{r}
+apply_if<-function(x,p,f){
+  result<-vector(length=length(x))
+  n<-0
+  for(i in seq_along(x)){
+    if(p(x[i])){
+      n<-n+1
+      result[n]<-f(x[i])
+    }
+  }
+  head(result,n)
+}
+apply_if(1:8,function(x) x%%2==0,function(x)x^2)
+```
+
+## Function Returning Functions ( and Closures)
+
+-   Closures enables functions remember the enviroment they were created in
+
+-   Thus when a function is called, its able to access its variables and values even if its creation enviroment DNE
+
+-   Closures are also created when you create a function inside another function and return it
+
+-   The inner function can refer to parameters and local variables inside the outer function even after you have returned from it
+
+-   Inner functions are used to specialize generic functions
+
+-   Below is a generic power function specialized for squaring or cubing numbers
+
+```{r}
+power<-function(n) function(x) x^n
+square<-power(2)
+cube<-power(3)
+x<-1:4
+square(x)
+cube(x)
+```
+
+## Filter, Map and Reduce
+
+Filter, Map and reduce are patterns often used in functional programming
+
+1.  `Filter()` is used to select cells that specify a given condition/predicate
+
+```{r}
+is_even<-function(x) x%%2==0
+is_even %>% Filter(1:8)
+Filter(is_even,1:8)
+is_even %>% Filter(as.list(1:8))
+Filter(is_even,as.list(1:8))
+
+```
+
+2.  **`map()`** functions work like `lapply()`
+
+-   It applies a function to every cell/element of an object and returns a list of the result
+
+-   Use `unlist()` to have result as a vector
+
+```{r}
+square<-function(x)x^2
+Map(square,1:4)
+```

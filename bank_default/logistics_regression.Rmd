@@ -1,0 +1,372 @@
+---
+title: "Predicting Bank Loan Defaults with Logistic Regression Model"
+output:
+  pdf_document:
+   toc: true
+  html_document:
+  toc: true
+  toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r,eval=F,echo=F}
+#package for Variance inflation Factor
+install.packages("car")
+#package for confusion matrix calculation
+install.packages("caret")
+#package for Receiver Operating Characteristics (ROC) and Area Under Curve (AUC)
+install.packages("ROCR")
+
+```
+
+```{r,echo=F,message=F,comment=F}
+library("car")
+library("caret")
+library("ROCR")
+```
+
+# Introduction
+
+The revenue generated from banks comes from 2 sources:
+
+1.  Non-interest sources
+
+-   It constitutes of deposit account services such as : ATMS, online payments, safe deposits and money management services like payroll processing.
+
+2.  Net- interest sources.
+
+-   It is the major generator of a bank's revenue. It comprises of different types of loans offerings where banks makes money by lending at higher interest rates than what it pays on deposits.
+
+-   The success of a bank is dependent on how many loans it can give out with low default rates where default implies the inability of a borrower to pay loan in time.
+
+A logistic model can be used to predict customers that have higher chances of defaulting on a loan.
+
+A `logistic regression model (logit model)` can be defined as a regression model whose target variable is binary (has two values only, Ie; yes/no, 0/1, default/not default) and it's explanatory variable can be binary, continuous, ordinal, e.t.c.
+
+If the target variable has only two values, then we have a `binomial logistic regression model` , else if it has more than two values, it is called a `multinomial logistic regression model` ,else if it has multiple values that are ordered its an `ordered logit model` (target variable has multiple ordered categories like excellent, good, average).
+
+In a hospital setup, a logit model can be used to predict whether patients will be readmitted to a hospital or not.
+
+In the field of machine learning, a logistic regression model fall under the category of supervised learning where it's used a a classification model
+
+# The Logistic Regression Model
+
+In logistic regression, we predict the probability of a binary outcome. In it's formula we denote probability of occurrence when $y=1$ as $p$ and the probability of no occurrence when $y=0$ as $1-p$ . The logistic regression formula can be defined as:
+
+$y=\beta_0+\beta_1X_1+\beta_2X_2+\dots \beta_nX_n$, where;
+
+$y=ln(\frac{p}{1-p})$ is the logit function, the target random variable.
+
+$X_i^{'s}$ are the independent non random variables.
+
+$\beta_i^{'s}$ are the logistic regression coefficients for N independent variables.
+
+## The Odds Ratio
+
+It can be defined as the odd of an event of interest occurring to the odd of an event of no interest occurring where an odd is the ratio of probability of occurrence to the probability of no occurrence
+
+### Calculating odds ratio
+
+Consider the table below:
+
+| Status              | Default | Non-Default | Total Borrower |
+|---------------------|---------|-------------|----------------|
+| Unemployed Borrower | 50      | 10          | 60             |
+| Employed Borrower   | 40      | 20          | 60             |
+
+Let's say we are interested in loan defaulting of unemployed customers. The we can get the odds ratio of default by unemployed customer in the following steps:
+
+1.  [**Get the odds of event of interest (unemployed customers)**]{.underline}
+
+Probability of defaulting is defined as $p=\frac{50}{60}=0.8$
+
+Probability of not defaulting is defined by $1-p=1-0.8=0.2$
+
+The odds of unemployed customers is given by $\frac{0.8}{0.2}=4$
+
+2.  [**Get the odds of events of no interest (employed customers)**]{.underline}
+
+Probability of defaulting is $p=\frac{40}{60}=0.6$
+
+Probability of not defaulting is $1-p=1-0.6=0.4$
+
+The odds of employed customers is given by $\frac{0.6}{0.4}=1.5$
+
+3.  [**Get the Odds Ratio.**]{.underline}
+
+The odds ratio denoted by $OR$ is defined as: $OR=\frac{odds(unemployed)}{odds(employed)}=\frac{4}{1.5}=2.66$
+
+In conclusion, the odds of bank default by unemployed customers is 2.66 higher than that of employed customers.
+
+## Logistics Regression Curve
+
+A logistic regression curve is an S-shaped curved better known as a sigmoidal curve that starts with a linear growth followed by an exponential growth which slows down and becomes stable. The sigmoidal curve shows the relationship between the target (y)and explanatory variables(x)
+
+Figure below is an example of a logistic regression curve
+
+![](images/image.7ARER2.png)
+
+## Assumptions of the Logistic regression
+
+1.  The target variable must be a discrete or a binary value with a an interval $y\in[0,1]$
+2.  The target variable follows a binomial distribution
+3.  The model should not be over-fitted nor under-fitted. An over-fitted model loses it's predictive capability when introduced to another data set whereas an under-fitted model lacks accuracy.
+4.  The explanatory variables are linearly related to the log odds.\
+    The relationship between the target and explanatory variables is not required.\
+5.  No multi-collinearity between explanatory variables.The explanatory variables are independent of each other (not correlated)
+6.  A large sample size. This ensures model has enough data to learn form which leads to avoidance of over-fitting and having unreliable estimates.
+
+Note that the maximum likelihood estimator method is used to get the estimates of the model.
+
+## Logistic Regression Model Fitting and Evaluation.
+
+Model fit tests are carried out to evaluate how well the model fits the data and how accurately it predicts our target variable. The lesser the difference between the observed values and the predicted values, the better the model. The differences between the observed and predicted values are called residuals.
+
+## Evaluating Fit of a model
+
+Evaluating a logistic model is mostly done using the `Likelihood Ratio` test and the `Hosmer-Lemeshow tests`
+
+#### `1. Likelihood Ratio Test (LRT)`
+
+The test is used to determine whether the full model is statistically different from the reduced model.\
+It tests whether the full model fits our data significantly better than our reduced model.A full model refers to that with all predictor variables whereas a reduced model is that with only predictor variables that significantly contribute to the prediction of our target variable at a certain significance level.
+
+Under LRT the test statistic is defined as:
+
+$$
+\chi^2=-2ln\lambda=-2ln(L_{reduced})-(-2ln(L_{full}))=-2ln(\frac{L_{reduced}}{L_{full}})\sim \chi^2_\alpha(k)
+$$
+
+, where
+
+$L_{reduced}$ is the log-likelihood of the reduced model
+
+$L_{full}$ is the log likelihood of the full model
+
+$\alpha$ is the significance level
+
+$k$ is the difference between number of estimated parameters in the full and reduced model
+
+#### `2. Hosmer-Lemeshow Test`
+
+The test evaluates a goodness of fit test on the logistic regression model. It tries to evaluate if there are any significant differences between the observed values of a proportion and the predicted probabilities of the fitted model. The predicted probabilities are divided into `deciles`, which are in 10 groups. The test statistic is defined as:
+
+$$
+Q=\sum_{i=1}^{10} \frac{(O_i-E_i)^2}{E_i} \sim \chi^2(k-2)
+$$ ,where;
+
+$O_i$ is the number of observed events in the i^th^ group
+
+$E_i$ is the number of expected events in the i^th^ group
+
+$K$ is the total number of groups , $k=10$
+
+If the p-value is less than the significance level $\alpha$ then the model is a poor fit
+
+### Statistical Test for Individual Independent Variables in Logistic
+
+Once performing an overall test of the model to assess whether it fits all the data points of a data set and whether it predicts the target variable accurately, we need to carry out statistical test for individual independent variables to assess whether they have any statistical significance in the prediction of the target variable.
+
+The Wald Statistic test and the Likelihood Ratio test are used to carry out these tests.
+
+#### 1. Wald's test
+
+The hypothesis test is $H_0:\beta_i{'s}=0\ vs\ H_1:\beta_i{'s} \ne0$ , where the test statistic is defined as;
+
+$$
+W=(\frac{\beta_i}{SE(\beta_i})^2 \sim \chi^2(1)
+$$ The Wald's test has its drawbacks. In some cases a data set has large coefficient estimates, which tend to increase the standard error thus reducing the Wald's test statistic. Reducing of the Wald's test statistics may result in considering independent variables as being insignificant in the prediction.
+
+#### 2. Likelihood Ratio Test
+
+Other than being used to test the overall fitness of a model, the LRT can be used to test if individual independent variables have a significant contribution to the prediction of target variables.The test statistic is similar
+
+The individual independent variable is entered inside the model in an orderly manner, and then the comparison between both the models is done in order to study the contribution of each independent variable in the model. The smaller the deviance between the reduced model and the full model, the better is the correlation between the dependent or target and independent or explanatory variables.
+
+## Predictive Value Validation in Logistic Regression Model
+
+Predictive value validation measures the accuracy of the model in predicting the target variable.To achieve the ability of measuring the accuracy of a model we use a confusion matrix
+
+A confusion matrix is a 2 dimensional classification table used in predictive value validation to measure the predictive accuracy or performance of a model. It has the following terms:
+
+1.  TP (True positive)
+
+-   It is a claim than an event exists when it actually exists (Correct prediction than an event exists when actually it does.
+
+2.  FN (False Negative)
+
+-   It's a claim that an event does not exist when actually it does (Incorrect prediction that an event does not exist when actually it does).
+
+3.  FP (False Positive) Type I error
+
+-   It's a claim that an event exists when actually it doesn't (Incorrect prediction that event exists when it doesn't
+
+4.  TN (True Negative) Type II error
+
+-   It's a claim than an even doesn't exist when actually it does (Correct prediction of non-existence of an event)
+
+# Malizia ii part
+
+# Logistic Regression In R
+
+## Business Problem
+
+Predicting the probability of bank loan defaulting
+
+## Business Solution
+
+Build a logistic model that will be used to predict defaulting of loans
+
+### Performing Data Exploration
+
+Before we start, let's interact with the data to learn, understand it and know what we are working with. To be able to do this we perform Exploratory Data Analysis EDA on the data. This will help us know the number of variables and observations in the data set. It will also allow us to look at trends, patterns, summary outliers and missing values in the data. Also we will get to know of the data type of each variable
+
+```{r}
+# load data in R
+data1<-read.csv("loan_default.csv",header=T,sep=",")
+
+#describe structure of data
+str(data1)
+```
+
+From the structure of the data, we see that it has 16 variables with 1000 observations. We also see that 13 variables are integers while 3 are characters. Our desire is to have the 3 `(Gender, Marital_status, Emp_status)` variables as ordered factors. To do this, we'll perform some data manipulation on the data.
+
+```{r}
+#data manipulation on Gender
+data1$Gender<-factor(data1$Gender)
+#data manipulation on Maritial_status
+data1$Marital_status<-factor(data1$Marital_status)
+#data manipulation on Emp_status
+data1$Emp_status<-factor(data1$Emp_status)
+str(data1)
+
+```
+
+```{r,eval=F}
+#display top 6 rows to see what data lookslike
+head(data1)
+#display bottom 6 row
+tail(data1)
+#display column names
+names(data1)
+#output descriptive statistics
+summary(data1)
+#Check for missing  values
+is.na(data1)
+```
+
+Missing values reduces the statistical power of a study and can provide biased estimates. To make the model efficient and effective we impute missing values using imputation techniques such as mean, K-nearest neighbor, fuzzy K-means, e.t.c. Imputing missing values implies that we replace missing values with estimated values based on other available information.
+
+## Model Building and interpretation of Full Data
+
+We are going to use the whole data for model building instead of randomly splitting it into train and test data to see the difference of the two approaches when building the model.
+
+```{r}
+#building a logistic regression model using glm on full data
+fullmodel<-glm(Default~.,data=data1,family = binomial(link=logit))
+summary(fullmodel)
+```
+
+The Null deviance is used to measure fit of model with only the intercept. It's degrees of freedom is n-1 where n is the total number of observations. The Residual deviance is used to measure the fit of the model with all the parameters. It's degrees of freedom are n-k where n is the total number of observations and k is the total number of predictors. The AIC (Alkaile information criteria balances the model fit and model complexity). These 3 merits can be used to compare existing model with other potential models. The smaller they are the better or fit the model is.
+
+The Number of Fisher Scoring Iteration refers to the number of iterations carried out before the Fisher scoring algorithm converges. The Fisher Scoring algorithms uses Maximum likelihood estimation to get the estimates of parameters. Each iteration involves recalculating of the estimates until the model converges.
+
+At $\alpha=0.05$ let's remove the variable that do not contribute significantly to the prediction of the target variable. This is referred to as model reduction. The prediction variable that are insignificant are those whose p-value is greater than 0.05
+
+The reduced model will be
+
+```{r}
+#reduced Model
+fullmodel2<-glm(Default~Checking_amount+Term+Credit_score+Saving_amount+Age,family=binomial(link=logit),data=data1)
+summary(fullmodel2)
+```
+
+Increase in one unit of $Checking_amount$ reduces probability of loan default by $-0.0048\dots$ whereas increastein one unit of $Term$ increase the probability of loan default by $0.1748\dots$ ,e.t.c
+
+Now lets break the data into 2 samples one for the training the model and the other for testing the model. We'll use the ratio 70:30.
+
+$\implies$ 70% of the data is used to train/build the model whilst 30% is used to test the fit of the model
+
+```{r}
+#get train data
+train_obs<-floor(0.7*nrow(data1))
+#set seed inorder to reproduce the sample
+set.seed(2)
+train_index<-sample(seq_len(nrow(data1)),size=train_obs)
+train_data<-data1[train_index,]
+#get test data
+test_data<-data1[-train_index,]
+```
+
+## Model building and interpretation of Train and Test Data
+
+```{r}
+#create logistic regression model using train data
+model1<-glm(Default~.,family = binomial(link=logit),data=train_data)
+summary(model1)
+
+
+```
+
+```{r}
+#reduced model
+model2<-glm(Default~Checking_amount+Term+Credit_score+Saving_amount+Age,data=train_data,family=binomial(link=logit))
+summary(model2)
+```
+
+### Variance Inflation Factor (VIF)
+
+It is a test for `multicollinearity` of the independent predictor variables. It helps identify `multicollinearity` between independent predictor variables. VIF values in the interval [5,10] are considered as very high values and independent variables whose values are in this interval are dropped so as not to impact the accuracy of the model.
+
+```{r}
+vif(model2)
+```
+
+All the independent parameters have their VIF values less than 5 implying that there's no multicollinearity among them thus no need of dropping any of them.
+
+Since logistic regression is a classification model, we need to have a decision threshold that determines the classification of predicted probabilities. This decision threshold separates the probability of an event occurring (e.g., loan default) from the probability of an event not occurring. The default decision threshold is 0.5, where predicted probabilities $\ge0.5$ are classified as events that will occur.
+
+In our case we want the decision threshold being $>70$. This mean predicted probabilities $>70$ are classified as event of a loan defaulting occurring.
+
+```{r}
+#Predicting the model using test data
+prob1<-predict(model2,test_data,type="response")
+predicted_probs<-data.frame(prob1)
+#setting threshold
+results<-ifelse(predicted_probs>0.7,1,0)
+```
+
+## Predictive Value Validation
+
+It measures the accuracy of a model.
+
+```{r}
+#define Actual values as a factor
+testing_high<-factor(test_data$Default)
+#Create a confusion matrix
+table(testing_high,results)
+#calculating the error rate
+(error_rate<-mean(results!=testing_high))
+#calculating accuracy rate
+(accuracyrate<-1-error_rate)
+
+```
+
+```{r}
+#Compute AUC for predicting Default with the model
+prob<-predict(model2,newdata = test_data,type="response")
+pred <- prediction(prob, test_data$Default)
+
+pmf <- performance(pred, measure = "tpr", x.measure = "fpr")
+plot(pmf,col= "red" )
+auc <- performance(pred, measure = "auc")
+(auc <- auc@y.values[[1]])
+
+```
+
+Area Under Curve (AUC) values $>0.7$ are considered as the model with high predictive accuracy.
+
+Since our AUC is around 98% our model is considered accurate

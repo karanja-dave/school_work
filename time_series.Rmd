@@ -1,0 +1,57 @@
+---
+title: "Assignment"
+author: "<>"
+date: "2024-11-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# load data into R
+task1<-read.csv("/home/dave/Downloads/miscellaneous/assignments/weather.csv")
+#task2<-load("/home/dave/Downloads/miscellaneous/assignments/retail_sales (1).pdf")
+```
+
+```{r}
+# load packages
+library("ggplot2")
+```
+
+# Task 1
+
+## QST 1;
+
+The weather elements are not cor-related.
+
+## QST 2;
+
+```{r}
+plot(task1$solar,task1$ppt)
+```
+
+## QST 3;
+
+```{r}
+cor(task1$solar,task1$ppt)
+cor(task1$ppt,task1$solar)
+```
+
+## QST 4
+
+```{r}
+solar_ts<-ts(data=task1,start=c(1960,1),frequency=12)
+plot(solar_ts,xlab="time",ylab="solar")
+ppt_ts<-ts(data=task1,start=c(1960,1),frequency=12)
+plot(ppt_ts)
+```
+
+## QST 5
+
+```{r}
+ggseasonplot(task1$solar,year.labels=T,year.labels.left=T)+
+  ylab("solar")+
+  ggtitle("pff")
+```

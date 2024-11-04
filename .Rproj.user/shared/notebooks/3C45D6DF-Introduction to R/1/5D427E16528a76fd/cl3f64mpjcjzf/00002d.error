@@ -1,0 +1,1 @@
+{"frames":[{"func":"apply(x, descriptive_stats)","file":"","line_number":0,"end_line_number":0,"character_number":0,"end_character_number":0},{"func":"match.fun(FUN)","file":"","line_number":0,"end_line_number":0,"character_number":0,"end_character_number":0}],"message":"Error in apply(x, descriptive_stats) : \n  argument \"FUN\" is missing, with no default\n"}

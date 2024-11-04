@@ -1,0 +1,5 @@
+"0","    iris %>% gather(Measurement,value,!Species) %>% "
+"0","      ggplot(aes(x=Species,y=value,col=Measurement)) +"
+"0","      geom_boxplot() +"
+"0","      facet_grid(Measurement~.,scale=""free_x"")"
+"0",""

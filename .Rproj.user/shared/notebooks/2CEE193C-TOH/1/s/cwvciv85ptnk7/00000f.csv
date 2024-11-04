@@ -1,0 +1,6 @@
+"0","#using lower tail p_value to test hypothesis"
+"0","(pval=pnorm(z,lower.tail = T))"
+"1","[1]"
+"1"," 2.5052e-06"
+"1","
+"

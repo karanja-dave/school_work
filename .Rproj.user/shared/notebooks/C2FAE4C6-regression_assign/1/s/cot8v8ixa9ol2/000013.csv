@@ -1,0 +1,13 @@
+"0","load(""smoking_data.RData"")"
+"0","smoking_data<-data.frame(country,alcohol,cigarettes)"
+"0","smoking_data %>% ggplot(aes(x=alcohol,y=cigarettes,col=country))+"
+"0","  geom_point()+"
+"0","  geom_smooth(method = ""lm"",fill=NA)+"
+"0","  geom_rug()+"
+"0","  xlab(""Alcohol Consumption"")+"
+"0","  ylab(""Cigarettes Consumption"")+"
+"0","  ggtitle(""ScatterPlot of Cigarettes vs Alcohol consumption of various Countries"")+"
+"0","  theme(plot.title = element_text(size = 12, face=""bold""))"
+"1","[38;5;252m`geom_smooth()` using formula = 'y ~
+x'[39m
+"

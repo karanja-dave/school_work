@@ -1,0 +1,153 @@
+---
+title: "Regression Analysis Assignment 1"
+output:
+  pdf_document:
+    toc: true
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+| Name      |             RegNo |
+|:----------|------------------:|
+| 1\. David | S030-01-1925/2022 |
+| 2\. Ken   | S030-01-1916/2022 |
+| 3\. Lucy  | S030-01-19xx/2022 |
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,message = F)
+```
+
+```{r}
+library("ggplot2")
+library("magrittr")
+```
+
+# Question 1
+
+## Solution for (i), (ii)
+
+```{r}
+#Age(years)
+x<-c(18,23,25,35,65,54,34,56,72,19,23,42,18,39,37)
+#max rate
+y<-c(202,186,187,180,156,169,174,172,153,199,193,174,198,183,178)
+#A plot of the scatter plot
+plot(x,y,
+     xlab = 'Age(years)',
+     ylab = 'Max Rate',
+     main = 'Plot of Max Rate on Age')
+#create a simple linear model
+fit_model<-lm(y~x)
+
+#plotting fitted line
+abline(lm(fit_model))
+```
+
+## Solution (iii), (iv)
+
+We test the hypothesis: $H_0:{\beta_1}=-1\ vs\ H_1:{\beta_1}\ne -1$
+
+Test statistics is given by:
+
+$t=\frac{\hat{\beta_1}-\beta_1}{\mathcal{SE(\hat{\beta_1})}}$
+
+```{r}
+#define slope for null hypothesis
+beta1<- -1
+#Get the fitted slope
+beta1_hat<-round(fit_model$coefficients[2],4)
+#store summary of model as an object to access standard error of estimates
+summ_model<-summary(fit_model)
+#Get standard error of slope
+se_beta1_hat<-round(summ_model$coefficients[2,"Std. Error"],5)
+#Get test statistics
+t_test<-round((beta1_hat-beta1)/se_beta1_hat,4)
+cat("Computed test statistics is given by :", t_test)
+#Get p-value
+(pval<-2*pt(t_test,13,lower.tail = F))
+cat("P-value is given by:", pval)
+
+```
+
+# ebu angalia io p-value tena
+
+# Question 2
+
+## Solution (i)
+
+```{r}
+load("smoking_data.RData")
+smoking_data<-data.frame(country,alcohol,cigarettes)
+smoking_data %>% ggplot(aes(x=alcohol,y=cigarettes,col=country))+
+  geom_point()+
+  geom_smooth(method = "lm",fill=NA)+
+  geom_rug()+
+  xlab("Alcohol Consumption")+
+  ylab("Cigarettes Consumption")+
+  ggtitle("ScatterPlot of Cigarettes vs Alcohol consumption of various Countries")+
+  theme(plot.title = element_text(size = 12, face="bold"))
+  
+```
+
+There exist a linear relationship between the data on alcohol and cigarette consumption, where increase in alcohol consumption increase cigarette consumption.
+
+## Solution (ii)
+
+```{r}
+#Pearson Correlation coefficient
+p_cor<-cor(alcohol,cigarettes,method="pearson")
+cat("The pearson's correlation coefficient is:",round(p_cor,4))
+```
+
+## Solution (iii)
+
+```{r}
+alcohol.2<-alcohol[-c(6,16)]
+cigarettes.2<-cigarettes[-c(6,16)]
+
+```
+
+The above code removes elements in the 6^th^ and 16^th^ indices(positions) respectively for both the alcohol and smoke variables and stores elements of the remaining indices in the variables alcohol.2 and cigarettes.2 respectively.
+
+The code is used to delete elements whose indices are specified.
+
+## Solution (iv)
+
+```{r}
+plot(alcohol.2,cigarettes.2,
+     xlab="Alcohol Consumption",
+     ylab ="Cigarette Consumption")
+title("Scatter Plot of Cigarettes vs Alcohol of New Data")
+
+```
+
+```{r}
+#Adjusted pearson coreelation coefficient on alcohol and cigarettes
+Ap_cor<-cor(alcohol.2,cigarettes.2,method = "pearson")
+cat("The Adjusted pearson correlation coefficient based on new data is:", round(Ap_cor,4))
+
+```
+
+There's a strong positive correlation between alcohol and cigarette consumption in the adjusted data than there is in the original data.
+
+## Solution (iv)
+
+We test the hypothesis $H_0:\rho=0\ vs\ H_1:\rho\ne0$
+
+Test statistics is given by $t=\frac{r\sqrt{n-2}}{\sqrt{1-r^2}}\sim \mathcal{t(n-2)}$
+
+```{r}
+#get correlation
+r<-round(Ap_cor,4)
+#Check equality in sie of variables
+length(cigarettes.2)==length(alcohol.2)
+#get size of variables
+n=length(alcohol.2)
+#Get test statistics
+(t_test<-(r*sqrt(n-2))/sqrt(1-r^2))
+cat("Computed test statistics is:", round(t_test,4))
+#get p-value
+(pval<-2*pt(t_test,12,lower.tail = F))
+cat("P-value is given by:",pval)
+```

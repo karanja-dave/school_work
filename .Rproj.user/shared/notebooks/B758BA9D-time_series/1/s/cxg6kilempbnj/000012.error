@@ -1,0 +1,1 @@
+{"frames":[],"message":"Error in ggseasonplot(task1$solar, year.labels = T, year.labels.left = T) : \n  could not find function \"ggseasonplot\"\n"}

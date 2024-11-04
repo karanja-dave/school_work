@@ -1,0 +1,6 @@
+"0","# create an empty character vector of same size as length of sales_total 
+(sales_group<-vector(mode=""character"",length=length(sales$sales_total)) %>% head(6))
+"
+"2","Error in vector(mode = ""character"", length = length(sales$sales_total)) %>%  : 
+  could not find function ""%>%""
+"

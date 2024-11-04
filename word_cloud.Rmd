@@ -1,0 +1,79 @@
+---
+title: "Word Cloud"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#package for text mining
+library("tm")
+library("SnowballC")
+library("wordcloud")
+```
+```{r}
+#Read the text file from internet
+filePath<-"http://www.sthda.com/sthda/RDoc/example-files/martin-luther-king-i-have-a-dream-speech.txt"
+#Assign the file as a text object
+text <- readLines(filePath)
+
+```
+
+
+```{r}
+docs<-Corpus(VectorSource(text))
+inspect(docs)
+```
+
+```{r}
+toSpace <- content_transformer(function (x , pattern ) gsub(pattern, " ", x))
+docs <- tm_map(docs, toSpace, "/")
+docs <- tm_map(docs, toSpace, "@")
+docs <- tm_map(docs, toSpace, "\\|")
+inspect(docs)
+```
+
+```{r,warning=F}
+# Convert the text to lower case
+docs <- tm_map(docs, content_transformer(tolower))
+# Remove numbers
+docs <- tm_map(docs, removeNumbers)
+# Remove english common stopwords
+docs <- tm_map(docs, removeWords, stopwords("english"))
+# Remove your own stop word
+# specify your stopwords as a character vector
+docs <- tm_map(docs, removeWords, c("blabla1", "blabla2"))
+# Remove punctuations
+docs <- tm_map(docs, removePunctuation)
+# Eliminate extra white spaces
+docs <- tm_map(docs, stripWhitespace)
+# Text stemming
+#docs <- tm_map(docs, stemDocument)
+```
+
+```{r}
+dtm <- TermDocumentMatrix(docs) #Create a term document matrix summary.
+m <- as.matrix(dtm) #Unpack the summary into a matrix.
+v <- sort(rowSums(m),decreasing=TRUE) #Count the words.
+d <- data.frame(word = names(v),freq=v) #convert the count into a data frame.
+head(d,10)
+```
+```{r,warning=F}
+set.seed(1234) #For replicability
+wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+max.words=200, random.order=FALSE, rot.per=0.35,
+colors=brewer.pal(8, "Dark2"))
+set.seed(1234) #For replicability
+wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+max.words=200, random.order=FALSE, rot.per=0.35,
+colors=brewer.pal(8, "Dark2"))```
+```
+
+
+```{r,warning=F}
+```
+
+
+l```{r,warning=F}

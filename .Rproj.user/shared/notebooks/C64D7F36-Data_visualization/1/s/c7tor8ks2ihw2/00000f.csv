@@ -1,0 +1,5 @@
+"0","shape_map<-c(""setosa""=1,"
+"0","             ""versicolor""=2,"
+"0","             ""virginicia""=3)"
+"0","iris %$% plot(Petal.Length~Petal.Width,"
+"0","              pch=shape_map[Species])"

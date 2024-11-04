@@ -1,0 +1,11 @@
+"0","summ=function(x){"
+"0","  for(i in 1:ncol(x)){"
+"0","    summary=data.frame(mean=mean(x[[i]]),var=var(x[[i]]))"
+"0","    summar=rbind(summar,summary)"
+"0","    "
+"0","  }"
+"0","  return(summar)"
+"0","}"
+"0","summ(anscombe)"
+"2","Error in summ(anscombe) : object 'summar' not found
+"

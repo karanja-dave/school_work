@@ -1,0 +1,241 @@
+---
+title: "Working with Large Datasets"
+author: "ME"
+date: "2024-05-07"
+output: html_document
+---
+
+This chapter focuses on dealing with large data sets that slow down your analysis
+
+Some algorithms are fast and scan through data in linear time (time taken to analyze data is linear to number of data points, while others take exponential time making it difficult to scan through a large number of data points
+
+*Complexity theory* is the science of what you can do with data in a given time or given space( ie RAM space)
+
+# Ways to deal with Large Data-sets
+
+## 1. Sub-sample Data before Analyzing Full Data-set
+
+Rarely do you need to analyze the whole data set to get an idea of how data behaves especially when there's a strong association of data points.
+
+Thus there's no need of analyzing a whole data set especially if the analysis is slow. You can just analyze a smaller sample of the data set
+
+It is more effective to work with a random sample of the data rather than the sample
+
+Reason been:
+
+1.  There is often a structure in data beyond columns in data frame
+
+-   The structure could be caused by when the data is collected
+
+-   For instance if data is ordered by when it was collected, the 1^st^ data points could be different from the later data points
+
+Thus randomizing your sampled data alleviates this problem
+
+You can use the `dplyr` functions `sample_n()` and `sample_frac()` to sample a data frame by getting a fixed number or rows and to get a fraction respectively.
+
+```{r,warning=F}
+library("dplyr")
+library("ggplot2")
+```
+
+```{r}
+iris %>% sample_n(size=5)
+```
+
+While `sample_n()` returns random rows, `sample()` returns columns randomly
+
+```{r}
+iris %>% sample_frac(size=0.02)
+```
+
+To randomize your sample in `dplyr` your data should be in a form that `dplyr` can manipulate it.
+
+In the event data is too large that you can't load it in R then you can't manipulate it using `dplyr`
+
+But with `dplyr` is easier to work with data in a disk rather than in the Ram as we will see afterwards.
+
+## 2 Running out of Memory During Analysis
+
+With R it's easier to run out of memory as R remembers more than is immediately obvious, Ie;
+
+In R all objects are immutable( once created, can't be modified)
+
+Thus when you modify an existing object you are just creating a new one
+
+Thus when you modify the data and store it in another variable, you have 2 representations of the data accessible through these variables
+
+`pryr` package can be used to examine memory usage
+
+```{r,eval=F,warning=F}
+install.packages("pryr")
+
+```
+
+```{r,warning=FALSE}
+library("pryr")
+
+```
+
+For instance we can see the cost of creating anew variable
+
+```{r}
+mem_change(x<-rnorm(10000))
+```
+
+Modifying the vector(Not allowed by R; what happens is that a new copy is made with the modifications) doesn't significantly increase memory usage as R copies the other elements and modifies where needed
+
+```{r}
+mem_change(x[1]<-0)
+```
+
+If we assign our vector to another variable less memory is also utilized
+
+```{r}
+mem_change(y <- x)
+```
+
+But if we modify one of the two vectors, copying and modification is done to the changed vector in order to have the other unchanged and this uses a lot of memory space
+
+```{r}
+mem_change(x[1] <- 0)
+```
+
+This gives as another reason to use pipeline operators
+
+For instance the `%<>%` doesn't lead to a lot of copying data
+
+Some functions copy data but immediately release it when they finish their executions
+
+However, some ie;`lm()` will store not only the input data but also the response and predictor variables thus making copies.
+
+**NB:** To free memory you can use the `rm()` which is used to delete single variables or `rm(list=ls()` that clears all memory space by deleting all variables'
+
+## 3. Too Large to Plot
+
+Large data points give rise to 2 common problems when plotting scatter plots.
+
+The problems include:
+
+1.  If you create files for scatter plots, you create a plot that contains each and every data point
+    -   This results to creating large files and even worse it takes a lot of time to plot.
+
+    -   Alleviate the issue by creating raster graphics instead of PDFs
+2.  With too many points a scatter plot is no longer informative
+    -   Reason been points will overlap and you can't see how many individual points fall on the plot
+
+```{r}
+d<-data.frame(x=rnorm(10000),y=rnorm(10000))
+```
+
+We can make a scatter plot and less time is taken if plot is saved as a raster graphics
+
+```{r}
+d %>% ggplot(aes(x=x,y=y)) +
+  geom_point()
+```
+
+The output is not informative as data points overlap making it difficult to see if there are different densities
+
+We can offset this by using the alpha levels that see to it each point is partly transparent thus you can see the density of points
+
+```{r}
+d %>% ggplot(aes(x=x,y=y)) +
+  geom_point(alpha=0.09)
+```
+
+This doesn't entirely solve the problem as files will draw every single point causing printing and file size problems
+
+A scatter plot with transparency is just a way of showing 2D densities and this can be done directly using `geom_density_2d()`
+
+```{r}
+d %>% ggplot(aes(x=x,y=y)) +
+  geom_density_2d()
+```
+
+An alternative of showing 2D density is by using the `hex-plot`
+
+It is the 2D equivalent of a histogram
+
+The 2D plane is split into hexagonal bins and the plot shows the counts of points falling into each bin
+
+```{r,warning=F,eval=F}
+install.packages("hexbin")
+
+```
+
+```{r,warning=F}
+library("hexbin")
+
+```
+
+```{r}
+d %>% ggplot(aes(x=x,y=y)) +
+  geom_hex()
+```
+
+**TO BE CONTINUED**
+
+## 4.Too Slow to Analyze
+
+We've seen that to deal with the issue of slow data analysis, we need to sub sample our data or work with linear time models/algorithms
+
+Unfortunately many algorithms are not linear timed and even if that were the case, it is difficult to fit the data in batches where the model parameters can be updated one batch at a time.
+
+Fortunately there are packages to solve the problem of slow data analysis
+
+One such package is the `biglm` package
+
+The package splits data into chunks that can be loaded in the memory and analyzed
+
+**NB:** You can use `biglm()` instead of `lm()` for linear regression and `bigglm()` instead of `gglm()` for generalized linear regression
+
+Let's use `cars` to fit a linear model of stopping distance as a function of speed in batches of 10 data points
+
+In order to define the slices we require some arithmetic.
+
+Next we extract subsets of the data using the `slice()` function from `dplyr`
+
+We can create a linear model for the 1^st^ slice then update using the code below:
+
+```{r,warning=F,comment=F,eval=F}
+install.packages("biglm")
+```
+
+```{r,warning=F}
+library("biglm")
+
+```
+
+```{r}
+slice_size<-10 #define size of sub set
+n<-nrow(cars) # stores size of row in a variable n
+slice<-cars %>% slice(1:slice_size) #Creates subsets of the cars data set
+model<-biglm(dist~speed,data=slice) #creates a linear regression model for our subset
+# Next is to update the model for the rest of the sub sets
+for(i in 1:(n/slice_size-1)){
+  slice<-cars %>% slice((i*slice_size+1):((i+1)*slice_size))
+  model<-update(model,moredata = slice)
+}
+model
+
+
+```
+
+The chunk can be broke down as follow
+
+-   We are looping from 1:4 ie `n/slice_size -1`=`(50/10)-1`
+
+-   We have a variable slice updated from each loop with its computation of each loop as follows
+
+    | i   | i\*slice_size() +1 | (i+1)\*slice_size | slice |
+    |-----|--------------------|-------------------|-------|
+    | 1   | (1\*10)+1=11       | (1+1)\*10=20      | 11:20 |
+    | 2   | (2\*10)+1=21       | (2+1)\*10=30      | 21:30 |
+    | 3   | (3\*10)+1=31       | (3+1)\*10=40      | 31:40 |
+    | 4   | (4\*10)+1=41       | (4+1)\*10=50      | 41:50 |
+
+-   The update function is used to update `model<-biglm(dist~speed,data=slice)` to a linear regression model for all subsets
+
+-   Its inside the loop and its syntax is `model<-update(model,moredata=slice)`
+
+## Too Large to Load

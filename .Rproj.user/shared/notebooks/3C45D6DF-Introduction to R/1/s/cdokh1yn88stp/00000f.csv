@@ -1,0 +1,23 @@
+"0","results
+"
+"1","
+Call:
+"
+"1",""
+"1","lm(formula = sales$sales_total ~ sales$num_of_orders)"
+"1",""
+"1","
+
+"
+"1","Coefficients:
+"
+"1","        (Intercept)  "
+"1","sales$num_of_orders  "
+"1","
+"
+"1","             -154.1  "
+"1","              166.2  "
+"1","
+"
+"1","
+"
